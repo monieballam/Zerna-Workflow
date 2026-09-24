@@ -54,7 +54,7 @@ zerna-platform/
 ## Getting started
 
 ```bash
-git clone https://github.com/monieballam-png/zerna-platform.git
+git clone https://github.com/monieballam/zerna-platform.git
 cd zerna-platform
 cp .env.example .env
 pnpm install

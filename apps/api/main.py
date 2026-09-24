@@ -263,7 +263,7 @@ app = FastAPI(
     openapi_tags=OPENAPI_TAGS,
     contact={
         "name": "Zerna Platform Team",
-        "url": "https://github.com/monieballam-png/zerna-platform",
+        "url": "https://github.com/monieballam/zerna-platform",
     },
     license_info={
         "name": "MIT",
