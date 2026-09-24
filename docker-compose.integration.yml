@@ -1,0 +1,121 @@
+# Zerna Platform - Integration Test Services
+# Separate compose file with different ports/volumes to avoid conflicts with dev environment.
+# Usage: docker compose -f docker-compose.integration.yml up -d
+
+services:
+  # PostgreSQL 16 - Integration test database
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: zerna-postgres-test
+    environment:
+      POSTGRES_USER: zerna_test
+      POSTGRES_PASSWORD: zerna_test
+      POSTGRES_DB: zerna_integration_test
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - zerna-test-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U zerna_test -d zerna_integration_test']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Redis 7 - Integration test cache / rate limiting
+  redis-test:
+    image: redis:7-alpine
+    container_name: zerna-redis-test
+    command: redis-server --requirepass zerna_test_redis --appendonly yes
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_test_data:/data
+    networks:
+      - zerna-test-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'zerna_test_redis', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # MinIO - S3-compatible object storage for integration tests
+  minio-test:
+    image: minio/minio:latest
+    container_name: zerna-minio-test
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9002:9000'
+      - '9003:9001'
+    volumes:
+      - minio_test_data:/data
+    networks:
+      - zerna-test-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # MinIO init - Create test buckets
+  minio-test-init:
+    image: minio/mc:latest
+    container_name: zerna-minio-test-init
+    depends_on:
+      minio-test:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set zerna-test http://minio-test:9000 minioadmin minioadmin;
+      mc mb --ignore-existing zerna-test/zerna-datasets-test;
+      mc mb --ignore-existing zerna-test/zerna-artifacts-test;
+      mc anonymous set download zerna-test/zerna-datasets-test;
+      mc anonymous set download zerna-test/zerna-artifacts-test;
+      exit 0;
+      "
+    networks:
+      - zerna-test-network
+
+  # Temporal 1.22.4 - Workflow orchestration for integration tests
+  temporal-test:
+    image: temporalio/auto-setup:1.22.4
+    container_name: zerna-temporal-test
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=zerna_test
+      - POSTGRES_PWD=zerna_test
+      - POSTGRES_SEEDS=postgres-test
+      - ENABLE_ES=false
+      - TEMPORAL_CLI_ADDRESS=temporal-test:7233
+    ports:
+      - '7234:7233'
+      - '8081:8080'
+    networks:
+      - zerna-test-network
+    healthcheck:
+      test: ['CMD', 'tctl', '--address', 'temporal-test:7233', 'cluster', 'health']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  zerna-test-network:
+    driver: bridge
+    name: zerna-test-network
+
+volumes:
+  postgres_test_data:
+    name: zerna-postgres-test-data
+  redis_test_data:
+    name: zerna-redis-test-data
+  minio_test_data:
+    name: zerna-minio-test-data

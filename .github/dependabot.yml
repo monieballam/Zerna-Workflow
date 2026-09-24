@@ -1,0 +1,94 @@
+# Dependabot — automated dependency updates
+# Scans Python (pip), JavaScript (npm), and GitHub Actions for vulnerabilities
+# and outdated packages on a weekly schedule.
+
+version: 2
+
+updates:
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # Python — API
+  - package-ecosystem: pip
+    directory: /apps/api
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      python-api:
+        patterns:
+          - '*'
+
+  # Python — methods
+  - package-ecosystem: pip
+    directory: /methods
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      python-methods:
+        patterns:
+          - '*'
+
+  # Python — workflows
+  - package-ecosystem: pip
+    directory: /workflows
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      python-workflows:
+        patterns:
+          - '*'
+
+  # Python — services
+  - package-ecosystem: pip
+    directory: /services
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      python-services:
+        patterns:
+          - '*'
+
+  # npm — web app
+  - package-ecosystem: npm
+    directory: /apps/web
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      npm-web:
+        patterns:
+          - '*'
+
+  # npm — SDK
+  - package-ecosystem: npm
+    directory: /packages/sdk
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      npm-sdk:
+        patterns:
+          - '*'
+
+  # npm — CDK infrastructure
+  - package-ecosystem: npm
+    directory: /infra/aws
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      npm-infra:
+        patterns:
+          - '*'

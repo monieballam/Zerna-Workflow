@@ -1,0 +1,1337 @@
+# ============================================================
+# ZeRNA 3-Level Hierarchical Annotation Taxonomy
+# Level 1: Lineage → Level 2: Major Type → Level 3: Fine Subtype
+# ============================================================
+#
+# HIERARCHY RULES:
+# - Fibroblast = CAF (same entity in cancer context)
+# - TAM is Level 3 under Myeloid (Level 2), not separate Level 2
+# - Osteoblast/Osteoclast are Level 2 under Stromal (Level 1)
+# - myCAF/iCAF/apCAF are Level 3 under CAF (Level 2)
+#
+# ============================================================
+
+# ===========================================================================
+# LEVEL 1: LINEAGE MARKERS
+# Four broad categories: Immune, Stromal, Epithelial, Endothelial
+# ===========================================================================
+Lineage:
+  Immune:
+    include:
+      - PTPRC # CD45 - universal leukocyte
+      - CD3D # T cells
+      - CD3E
+      - CD3G
+      - MS4A1 # B cells (CD20)
+      - CD79A
+      - CD14 # Myeloid
+      - CD68
+      - LYZ
+      - S100A8
+      - NKG7 # NK cells
+      - GNLY
+      - TPSAB1 # Mast cells
+    exclude:
+      - EPCAM
+      - KRT8
+      - KRT18
+      - PECAM1
+      - VWF
+      - COL1A1
+      - COL1A2
+    tolerant_include:
+      - CD2
+      - CD4
+      - CD8A
+      - FCGR3A
+      - KLRD1
+
+  Stromal:
+    include:
+      # Core ECM
+      - COL1A1
+      - COL1A2
+      - COL3A1
+      - DCN
+      - LUM
+      - VIM
+      # CAF markers
+      - PDGFRA
+      - PDGFRB
+      - FAP
+      - THY1
+      # Myofibroblast
+      - ACTA2
+      - TAGLN
+      - MYH11
+      # Pericyte
+      - RGS5
+      - CSPG4
+      - MCAM
+      # Osteoblast/osteoclast
+      - RUNX2
+      - SP7
+      - CTSK
+      - ACP5
+    exclude:
+      - PTPRC
+      - EPCAM
+      - KRT8
+      - PECAM1
+      - VWF
+    tolerant_include:
+      - POSTN
+      - CTHRC1
+      - IL6
+      - CXCL12
+
+  Epithelial:
+    include:
+      # Core epithelial adhesion molecules
+      - EPCAM # Epithelial cell adhesion molecule (most universal)
+      - TACSTD2 # TROP2 - epithelial marker
+      - CDH1 # E-cadherin - epithelial adhesion
+
+      # Cytokeratins - Simple epithelium (luminal)
+      - KRT8 # Keratin 8 - simple/luminal
+      - KRT18 # Keratin 18 - simple/luminal
+      - KRT19 # Keratin 19 - simple/luminal
+      - KRT7 # Keratin 7 - simple epithelium
+      - KRT20 # Keratin 20 - intestinal/urothelial
+
+      # Cytokeratins - Stratified epithelium (basal)
+      - KRT5 # Keratin 5 - basal/stratified
+      - KRT14 # Keratin 14 - basal/stratified
+      - KRT15 # Keratin 15 - basal stem cells
+      - KRT17 # Keratin 17 - basal/proliferative
+      - KRT6A # Keratin 6A - proliferative basal
+      - KRT6B # Keratin 6B - proliferative basal
+      - KRT16 # Keratin 16 - activated keratinocytes
+
+      # Tight junction proteins
+      - CLDN4 # Claudin 4 - tight junctions
+      - CLDN7 # Claudin 7 - tight junctions
+      - CLDN3 # Claudin 3 - epithelial barrier
+      - TJP1 # ZO-1 - tight junction protein 1
+      - OCLN # Occludin - tight junctions
+
+      # Additional epithelial markers
+      - MUC1 # Mucin 1 - glycoprotein
+      - GRHL2 # Grainyhead-like 2 - epithelial TF
+      - ESRP1 # Epithelial splicing regulatory protein 1
+      - ESRP2 # Epithelial splicing regulatory protein 2
+      - LGALS3 # Galectin-3
+      - S100A14 # Epithelial marker
+
+      # Basal transcription factors
+      - TP63 # p63 - basal epithelial TF
+      - TP73 # p73 - epithelial development
+
+      # Stem/progenitor markers
+      - ITGA6 # Integrin alpha 6 - basal/stem
+      - CD44 # Adhesion - basal/stem
+      - PROM1 # CD133 - stem cells
+
+      # Prostate-specific (if prostate tissue)
+      - KLK3 # PSA - prostate-specific antigen
+      - KLK2 # Kallikrein 2
+      - AR # Androgen receptor
+      - NKX3-1 # NK3 homeobox 1 - prostate TF
+      - FOLH1 # PSMA - prostate-specific membrane antigen
+      - TMPRSS2 # Transmembrane serine protease
+
+      # Neuroendocrine markers (if NE cells present)
+      - CHGA # Chromogranin A
+      - SYP # Synaptophysin
+      - INSM1 # Insulinoma-associated 1
+
+    exclude:
+      - PTPRC # CD45 - immune
+      - PECAM1 # CD31 - endothelial
+      - VWF # von Willebrand - endothelial
+      - COL1A1 # Collagen - stromal
+      - COL1A2 # Collagen - stromal
+      - VIM # Vimentin - mesenchymal (but note: EMT cells may have both)
+
+    tolerant_include:
+      # These may be present in some epithelial cells
+      - ACPP # Prostatic acid phosphatase
+      - SLC45A3 # Solute carrier - prostate
+      - STEAP1 # Six-transmembrane epithelial antigen
+      - STEAP2 # STEAP family member
+      - HOXB13 # Homeobox B13 - prostate
+      - MSMB # Microseminoprotein beta
+      - AZGP1 # Alpha-2-glycoprotein 1
+      - KLK4 # Kallikrein 4
+      - KRT4 # Keratin 4 - stratified non-keratinizing
+      - KRT13 # Keratin 13 - stratified non-keratinizing
+      - CEACAM5 # CEA - carcinoembryonic antigen
+      - CEACAM6 # CEA family
+
+  Endothelial:
+    include:
+      - PECAM1
+      - VWF
+      - CDH5
+      - KDR
+      - FLT1
+      - ENG
+      - CLDN5
+      - ESAM
+      - PROX1 # Lymphatic
+      - FLT4
+      - LYVE1
+    exclude:
+      - PTPRC
+      - EPCAM
+      - KRT8
+      - COL1A1
+    tolerant_include:
+      - ERG
+      - TEK
+      - PDPN
+
+# ===========================================================================
+# LEVEL 2: MAJOR CELL TYPES
+# Mid-level categories within each lineage
+# ===========================================================================
+Subtypes_Level2:
+  Immune:
+    # T cells (broad T cell compartment)
+    T_cells:
+      genes:
+        - CD3D
+        - CD3E
+        - CD3G
+        - TRAC
+        - LCK
+        - CD2
+        - CD5
+        - CD7
+      exclude:
+        - CD19
+        - MS4A1
+        - CD68
+        - CD14
+
+    # B cells (broad B cell compartment)
+    B_cells:
+      genes:
+        - MS4A1
+        - CD79A
+        - CD79B
+        - CD19
+        - PAX5
+        - CD22
+      exclude:
+        - CD3D
+        - MZB1
+        - JCHAIN
+
+    # Plasma cells (separate from B cells)
+    Plasma:
+      genes:
+        - MZB1
+        - JCHAIN
+        - XBP1
+        - SDC1
+        - IRF4
+        - PRDM1
+      exclude:
+        - MS4A1
+        - PAX5
+
+    # Myeloid cells (monocytes, macrophages, DCs, TAMs)
+    Myeloid:
+      genes:
+        - CD14
+        - CD68
+        - LYZ
+        - S100A8
+        - S100A9
+        - FCGR3A
+        - CSF1R
+        - C1QA
+        - FCER1A # DCs
+        - ITGAX
+      exclude:
+        - CD3D
+        - CD79A
+        - NKG7
+
+    # NK cells
+    NK_cells:
+      genes:
+        - NKG7
+        - GNLY
+        - KLRD1
+        - KLRB1
+        - NCAM1
+        - PRF1
+        - GZMB
+      exclude:
+        - CD3D
+        - CD3E
+
+    # Mast cells
+    Mast_cells:
+      genes:
+        - TPSAB1
+        - TPSB2
+        - CPA3
+        - KIT
+        - MS4A2
+        - HDC
+      exclude:
+        - CD3D
+        - CD79A
+
+  Stromal:
+    # CAF (Cancer-Associated Fibroblast = Fibroblast in cancer)
+    CAF:
+      genes:
+        - COL1A1
+        - COL1A2
+        - COL3A1
+        - DCN
+        - LUM
+        - PDGFRA
+        - FAP
+        - THY1
+        - VIM
+        - FN1
+      exclude:
+        - PTPRC
+        - EPCAM
+        - PECAM1
+        - RGS5 # Pericyte
+
+    # Pericyte
+    Pericyte:
+      genes:
+        - RGS5
+        - PDGFRB
+        - CSPG4
+        - MCAM
+        - ABCC9
+        - KCNJ8
+        - NOTCH3
+      exclude:
+        - PTPRC
+        - EPCAM
+        - FAP
+        - ACTA2 # Lower than SMC
+
+    # Smooth muscle cells
+    Smooth_Muscle:
+      genes:
+        - ACTA2
+        - TAGLN
+        - MYH11
+        - CNN1
+        - MYLK
+        - DES
+      exclude:
+        - PTPRC
+        - EPCAM
+        - RGS5
+
+    # Osteoblast (stromal in cancer/bone metastasis context)
+    Osteoblast:
+      genes:
+        - RUNX2
+        - SP7
+        - COL1A1
+        - BGLAP
+        - IBSP
+        - SPP1
+        - ALPL
+      exclude:
+        - PTPRC
+        - EPCAM
+        - ACP5
+
+    # Osteoclast (stromal in cancer/bone metastasis context)
+    Osteoclast:
+      genes:
+        - CTSK
+        - ACP5
+        - NFATC1
+        - DCSTAMP
+        - OSCAR
+        - CALCR
+        - CSF1R
+      exclude:
+        - RUNX2
+        - COL1A1
+
+  Epithelial:
+    # Luminal epithelial cells
+    Luminal:
+      genes:
+        - EPCAM
+        - KRT8
+        - KRT18
+        - KRT19
+        - KRT7
+        - CDH1
+        - MUC1
+        - TACSTD2
+        - CLDN4
+        - CLDN7
+        - CLDN3
+        - TJP1
+        - GRHL2
+        - ESRP1
+      exclude:
+        - KRT5 # Basal marker
+        - KRT14 # Basal marker
+        - TP63 # Basal TF
+        - VIM # Mesenchymal
+
+    # Basal epithelial cells
+    Basal:
+      genes:
+        - KRT5
+        - KRT14
+        - KRT15
+        - KRT17
+        - TP63
+        - ITGA6
+        - CD44
+        - KRT6A
+        - KRT6B
+        - KRT16
+        - DSG3 # Desmoglein 3 - basal
+        - ITGB4 # Integrin beta 4
+        - LAMB3 # Laminin beta 3
+      exclude:
+        - KRT8 # Luminal
+        - KRT18 # Luminal
+        - AR # Usually luminal
+
+    # Intermediate/transitional cells
+    Intermediate:
+      genes:
+        - KRT19
+        - TACSTD2
+        - EPCAM
+        - CLDN4
+        - KRT7
+        - KRT8
+        - KRT18
+        - KRT5 # Co-expression of luminal + basal
+        - TP63 # Co-expression
+        - MUC1
+      exclude:
+        - CHGA # Neuroendocrine
+        - SYP
+
+    # Neuroendocrine cells
+    Neuroendocrine:
+      genes:
+        - CHGA # Chromogranin A
+        - CHGB # Chromogranin B
+        - SYP # Synaptophysin
+        - INSM1 # Insulinoma-associated 1
+        - ASCL1 # Achaete-scute homolog 1
+        - NCAM1 # CD56 - neural CAM
+        - ENO2 # Neuron-specific enolase
+        - DLL3 # Delta-like 3
+        - SCG3 # Secretogranin 3
+      exclude:
+        - EPCAM # Often lost in NE
+        - KRT8 # Often low/lost
+        - AR # Often lost in NEPC
+
+    # Secretory cells
+    Secretory:
+      genes:
+        - KRT8
+        - KRT18
+        - KRT19
+        - MUC1
+        - TACSTD2
+        - WFDC2 # WAP four-disulfide core domain 2
+        - LCN2 # Lipocalin 2
+        - PIGR # Polymeric immunoglobulin receptor
+        - AGR2 # Anterior gradient 2 - ER protein
+        - AGR3 # Anterior gradient 3
+      exclude:
+        - KRT5
+        - TP63
+
+    # Club/hillock cells (if airway or specific tissues)
+    Club:
+      genes:
+        - SCGB1A1 # Secretoglobin 1A1 (club cell marker)
+        - SCGB3A2 # Secretoglobin 3A2
+        - CYP2F2 # Cytochrome P450
+        - MUC5B # Mucin 5B
+        - KRT8
+        - KRT18
+      exclude:
+        - MUC5AC # Goblet cells
+        - CHGA
+
+    # Goblet cells (if mucosal tissue)
+    Goblet:
+      genes:
+        - MUC5AC # Mucin 5AC - goblet marker
+        - MUC2 # Mucin 2 - intestinal goblet
+        - TFF3 # Trefoil factor 3
+        - AGR2
+        - SPDEF # SAM pointed domain ETS factor
+        - FCGBP # Fc fragment binding protein
+      exclude:
+        - CHGA
+        - SYP
+
+    # Tuft cells (rare epithelial; must map to Epithelial, never Immune)
+    Tuft_cells:
+      genes:
+        - POU2F3 # Tuft cell master regulator
+        - TRPM5 # Chemosensory
+        - IL25 # IL-25
+        - DCLK1 # Doublecortin-like kinase 1
+        - GFI1B # Growth factor independent 1B
+        - AVIL # Advillin
+      exclude:
+        - PTPRC
+        - CD3D
+
+    # Acinar cells (epithelial secretory)
+    Acinar:
+      genes:
+        - REG1A
+        - REG1B
+        - PRSS1
+        - PRSS2
+        - AMY2A
+        - KRT19
+        - EPCAM
+      exclude:
+        - PTPRC
+        - CHGA
+
+    # Hepatocytes (epithelial)
+    Hepatocytes:
+      genes:
+        - ALB
+        - APOA1
+        - TTR
+        - CYP3A4
+        - G6PC
+        - EPCAM
+        - KRT8
+        - KRT18
+      exclude:
+        - PTPRC
+        - CD3D
+
+    # Enterocytes (intestinal epithelial)
+    Enterocytes:
+      genes:
+        - FABP1
+        - FABP2
+        - ALPI
+        - SI
+        - DPP4
+        - KRT20
+        - EPCAM
+      exclude:
+        - PTPRC
+        - CHGA
+
+    # Cholangiocytes (biliary epithelial)
+    Cholangiocytes:
+      genes:
+        - KRT7
+        - KRT19
+        - EPCAM
+        - SOX9
+        - CFTR
+        - AE2
+      exclude:
+        - PTPRC
+        - CD3D
+
+    # Luminal epithelial (generic)
+    Luminal_epithelial:
+      genes:
+        - EPCAM
+        - KRT8
+        - KRT18
+        - KRT19
+        - CDH1
+        - MUC1
+      exclude:
+        - PTPRC
+        - KRT5
+
+  Endothelial:
+    # Blood endothelial
+    Blood_Endothelial:
+      genes:
+        - PECAM1
+        - VWF
+        - CDH5
+        - KDR
+        - ENG
+        - ESAM
+        - CLDN5
+        - RAMP2
+      exclude:
+        - PROX1
+        - FLT4
+
+    # Lymphatic endothelial
+    Lymphatic_Endothelial:
+      genes:
+        - PROX1
+        - FLT4
+        - LYVE1
+        - PDPN
+        - CCL21
+        - FOXC2
+      exclude:
+        - VWF # Low/absent
+
+# ===========================================================================
+# LEVEL 3: FINE SUBTYPES
+# Detailed subtypes within Level 2 categories
+# ===========================================================================
+Subtypes_Level3:
+  Immune:
+    # Level 3 under T_cells (Level 2)
+    T_cells:
+      CD4_T:
+        genes:
+          - CD4
+          - IL7R
+          - CCR7
+          - LTB
+          - CD40LG
+        exclude:
+          - CD8A
+          - CD8B
+
+      CD8_T:
+        genes:
+          - CD8A
+          - CD8B
+          - GZMB
+          - PRF1
+          - NKG7
+          - IFNG
+        exclude:
+          - CD4
+
+      Treg:
+        genes:
+          - FOXP3
+          - IL2RA
+          - CTLA4
+          - TIGIT
+          - IKZF2
+          - IL10
+        exclude:
+          - IFNG
+
+      T_exhausted:
+        genes:
+          - PDCD1
+          - HAVCR2
+          - LAG3
+          - TIGIT
+          - CTLA4
+          - TOX
+          - ENTPD1
+        exclude:
+          - IL7R
+          - CCR7
+
+      T_gd:
+        genes:
+          - TRDC
+          - TRGC1
+          - TRGC2
+          - KLRB1
+        exclude:
+          - CD4
+          - CD8A
+
+      T_memory:
+        genes:
+          - IL7R
+          - CCR7
+          - SELL
+          - TCF7
+          - LEF1
+          - CD44
+        exclude:
+          - GZMB
+          - PRF1
+
+    # Level 3 under B_cells (Level 2)
+    B_cells:
+      Naive_B:
+        genes:
+          - MS4A1
+          - CD79A
+          - IL4R
+          - FCER2
+          - TCL1A
+          - IGHD
+        exclude:
+          - CD27
+
+      Memory_B:
+        genes:
+          - MS4A1
+          - CD27
+          - CD38
+          - TNFRSF13B
+        exclude:
+          - IGHD
+          - TCL1A
+
+    # Plasma cells have no Level 3 (already specific)
+
+    # Level 3 under Myeloid (Level 2) - THIS IS WHERE TAM GOES
+    Myeloid:
+      Monocyte:
+        genes:
+          - CD14
+          - S100A8
+          - S100A9
+          - LYZ
+          - VCAN
+        exclude:
+          - C1QA # Tissue macrophage marker
+          - MRC1
+
+      Classical_Monocyte:
+        genes:
+          - CD14
+          - S100A8
+          - S100A9
+          - SELL
+        exclude:
+          - FCGR3A
+
+      Non_classical_Monocyte:
+        genes:
+          - FCGR3A
+          - CD14
+          - CX3CR1
+          - CDKN1C
+        exclude:
+          - S100A8
+
+      Macrophage:
+        genes:
+          - CD68
+          - C1QA
+          - C1QB
+          - C1QC
+          - APOE
+          - MARCO
+        exclude:
+          - S100A8 # Monocyte marker
+          - VCAN
+
+      TAM: # Tumor-Associated Macrophage (Level 3 under Myeloid)
+        genes:
+          - CD68
+          - C1QA
+          - SPP1
+          - APOE
+          - TREM2
+          - MARCO
+          - LGALS3
+        exclude:
+          - S100A8
+
+      M1_Macrophage:
+        genes:
+          - CD68
+          - CD86
+          - IL1B
+          - TNF
+          - NOS2
+          - CXCL9
+          - CXCL10
+        exclude:
+          - MRC1
+          - CD163
+
+      M2_Macrophage:
+        genes:
+          - CD68
+          - MRC1
+          - CD163
+          - MSR1
+          - IL10
+          - TGFB1
+          - CCL18
+        exclude:
+          - NOS2
+          - IL1B
+
+      DC:
+        genes:
+          - FCER1A
+          - CLEC10A
+          - ITGAX
+          - CD1C
+          - FLT3
+          - ZBTB46
+        exclude:
+          - CD14
+
+      cDC1:
+        genes:
+          - CLEC9A
+          - XCR1
+          - BATF3
+          - IRF8
+          - CADM1
+        exclude:
+          - CD1C
+
+      cDC2:
+        genes:
+          - CD1C
+          - FCER1A
+          - CLEC10A
+          - IRF4
+          - NOTCH2
+        exclude:
+          - CLEC9A
+
+      pDC:
+        genes:
+          - LILRA4
+          - IL3RA
+          - CLEC4C
+          - TCF4
+          - IRF7
+        exclude:
+          - CD1C
+          - ITGAX
+
+    # Level 3 under NK_cells (Level 2)
+    NK_cells:
+      NK_cytotoxic:
+        genes:
+          - NKG7
+          - GNLY
+          - GZMB
+          - PRF1
+          - FGFBP2
+          - CX3CR1
+        exclude:
+          - CD3D
+
+    # Mast cells have no Level 3 (already specific)
+
+  Stromal:
+    # Level 3 under CAF (Level 2) - THIS IS WHERE myCAF/iCAF/apCAF GO
+    CAF:
+      myCAF: # Myofibroblastic CAF
+        genes:
+          - ACTA2
+          - TAGLN
+          - MYH11
+          - COL1A1
+          - PDGFRA
+          - CTHRC1
+          - POSTN
+        exclude:
+          - IL6 # iCAF marker
+
+      iCAF: # Inflammatory CAF
+        genes:
+          - IL6
+          - CXCL1
+          - CXCL2
+          - CXCL12
+          - PDGFRA
+          - DCN
+          - LIF
+          - CCL2
+        exclude:
+          - ACTA2
+
+      apCAF: # Antigen-presenting CAF
+        genes:
+          - HLA-DRA
+          - HLA-DRB1
+          - HLA-DPA1
+          - CD74
+          - SLPI
+          - CFD
+        exclude:
+          - ACTA2
+          - IL6
+
+      rCAF: # Resting/developmental CAF
+        genes:
+          - DCN
+          - LUM
+          - PDGFRA
+          - APOD
+          - GSN
+          - MFAP5
+        exclude:
+          - ACTA2
+          - IL6
+          - POSTN
+
+      Myofibroblast: # Classic myofibroblast phenotype
+        genes:
+          - ACTA2
+          - TAGLN
+          - MYL9
+          - MYLK
+          - MYH11
+          - COL1A1
+          - ITGA11
+        exclude:
+          - RGS5
+
+    # Level 3 under Smooth_Muscle (Level 2)
+    Smooth_Muscle:
+      Vascular_SMC:
+        genes:
+          - ACTA2
+          - TAGLN
+          - MYH11
+          - NOTCH3
+          - JAG1
+          - CARMN
+        exclude:
+          - DES
+
+    # Pericyte, Osteoblast, Osteoclast have no Level 3
+
+  Epithelial:
+    # Level 3 under Luminal
+    Luminal:
+      # Prostate luminal - differentiated
+      Prostate_Luminal_Differentiated:
+        genes:
+          - KLK3 # PSA - high expression
+          - KLK2
+          - AR # Androgen receptor - high
+          - NKX3-1 # Prostate TF
+          - TMPRSS2
+          - FOLH1 # PSMA
+          - ACPP # PAP
+          - SLC45A3
+          - KRT8
+          - KRT18
+        exclude:
+          - KRT5
+          - TP63
+
+      # Prostate luminal - progenitor/transitional
+      Prostate_Luminal_Progenitor:
+        genes:
+          - KRT8
+          - KRT18
+          - AR # Lower than differentiated
+          - NKX3-1
+          - KRT19 # Higher in progenitors
+          - TACSTD2
+          - CD24 # Progenitor marker
+        exclude:
+          - KLK3 # Lower/absent
+          - KRT5
+
+      # Luminal secretory
+      Luminal_Secretory:
+        genes:
+          - KRT8
+          - KRT18
+          - MUC1
+          - WFDC2
+          - LCN2
+          - AGR2
+          - AGR3
+          - PIGR
+          - TACSTD2
+        exclude:
+          - KRT5
+          - TP63
+
+      # Luminal hormone-responsive
+      Luminal_AR_High:
+        genes:
+          - AR # Very high AR expression
+          - KLK3
+          - KLK2
+          - NKX3-1
+          - FKBP5 # AR target gene
+          - TMPRSS2
+          - STEAP2
+          - SLC45A3
+        exclude:
+          - KRT5
+          - CHGA
+
+      # Luminal AR-low (castration resistant phenotype)
+      Luminal_AR_Low:
+        genes:
+          - KRT8
+          - KRT18
+          - EPCAM
+          - MUC1
+          - TACSTD2
+        exclude:
+          - AR # Low/lost
+          - KLK3 # Low/lost
+          - KRT5
+          - CHGA
+
+    # Level 3 under Basal
+    Basal:
+      # Classic basal
+      Prostate_Basal_Classic:
+        genes:
+          - KRT5
+          - KRT14
+          - TP63 # High expression
+          - ITGA6
+          - CD44
+          - ITGB4
+          - DSG3
+        exclude:
+          - AR
+          - KLK3
+          - KRT8
+
+      # Basal stem-like
+      Basal_Stem:
+        genes:
+          - KRT5
+          - KRT14
+          - TP63
+          - CD44 # High
+          - ITGA6 # High
+          - PROM1 # CD133
+          - SOX2 # Stem TF
+          - BMI1 # Stem marker
+          - KRT15 # Stem marker
+        exclude:
+          - AR
+          - KRT8
+
+      # Basal proliferative
+      Basal_Proliferative:
+        genes:
+          - KRT5
+          - KRT14
+          - KRT17 # Proliferative marker
+          - KRT6A
+          - KRT6B
+          - KRT16
+          - TP63
+          - MKI67 # Proliferation
+          - PCNA
+        exclude:
+          - AR
+          - KRT8
+
+      # Myoepithelial (if present)
+      Myoepithelial:
+        genes:
+          - KRT5
+          - KRT14
+          - TP63
+          - ACTA2 # Smooth muscle actin
+          - TAGLN # Transgelin
+          - MYH11 # Myosin
+          - CD44
+        exclude:
+          - EPCAM # Often low
+          - KRT8
+
+    # Level 3 under Intermediate
+    Intermediate:
+      # Luminal-basal intermediate
+      Luminal_Basal_Intermediate:
+        genes:
+          - KRT5 # Co-expression
+          - KRT8 # Co-expression
+          - KRT14
+          - KRT18
+          - KRT19
+          - TP63 # Moderate
+          - EPCAM
+        exclude:
+          - CHGA
+          - SYP
+
+      # Transitional (urothelial-like if bladder/urinary)
+      Transitional:
+        genes:
+          - KRT5
+          - KRT7
+          - KRT8
+          - KRT18
+          - KRT19
+          - KRT20 # Urothelial marker
+          - UPK2 # Uroplakin 2
+          - UPK3A # Uroplakin 3A
+        exclude:
+          - CHGA
+
+      # EMT-like (undergoing epithelial-mesenchymal transition)
+      EMT_like:
+        genes:
+          - VIM # Mesenchymal marker acquired
+          - FN1 # Fibronectin
+          - SNAI1 # Snail - EMT TF
+          - SNAI2 # Slug
+          - TWIST1 # Twist - EMT TF
+          - ZEB1 # ZEB1 - EMT TF
+          - EPCAM # Partially retained
+          - KRT8 # Partially retained
+        exclude:
+          - CDH1 # E-cadherin lost/reduced
+          - CHGA
+
+    # Level 3 under Neuroendocrine
+    Neuroendocrine:
+      # Small cell neuroendocrine
+      SCNC: # Small cell neuroendocrine carcinoma
+        genes:
+          - CHGA
+          - SYP
+          - INSM1
+          - ASCL1 # High - SCLC TF
+          - NCAM1 # CD56
+          - ENO2 # NSE
+          - DLL3 # Delta-like 3
+          - GRP # Gastrin-releasing peptide
+          - NEUROD1 # NeuroD1 TF
+        exclude:
+          - AR # Lost
+          - EPCAM # Lost/low
+          - KRT8 # Low/lost
+
+      # Large cell neuroendocrine
+      LCNC: # Large cell neuroendocrine carcinoma
+        genes:
+          - CHGA
+          - SYP
+          - INSM1
+          - NCAM1
+          - ENO2
+          - CALCA # Calcitonin
+        exclude:
+          - ASCL1 # Lower than SCNC
+          - DLL3 # Lower than SCNC
+
+      # Amphicrine (dual endocrine-exocrine)
+      Amphicrine:
+        genes:
+          - CHGA # NE marker
+          - SYP # NE marker
+          - KRT8 # Epithelial retained
+          - KRT18 # Epithelial retained
+          - AR # May be retained
+          - INSM1
+        exclude:
+          - ASCL1 # Usually absent
+
+      # Carcinoid-like
+      Carcinoid_like:
+        genes:
+          - CHGA # High
+          - SYP
+          - INSM1
+          - SSTR2 # Somatostatin receptor 2
+          - SSTR5 # Somatostatin receptor 5
+          - VMAT1 # Vesicular monoamine transporter
+        exclude:
+          - ASCL1 # Absent
+          - DLL3
+
+    # Level 3 under Secretory
+    Secretory:
+      # Prostate secretory
+      Prostate_Secretory:
+        genes:
+          - KRT8
+          - KRT18
+          - KRT19
+          - WFDC2
+          - LCN2
+          - MSMB # Beta-microseminoprotein
+          - AGR2
+          - TACSTD2
+        exclude:
+          - KRT5
+          - CHGA
+
+      # Goblet-like secretory
+      Goblet_like:
+        genes:
+          - MUC5AC
+          - MUC2
+          - TFF3
+          - AGR2
+          - SPDEF
+          - KRT8
+        exclude:
+          - CHGA
+          - KRT5
+
+    # Level 3 under Club (if applicable)
+    Club:
+      Club_Secretory:
+        genes:
+          - SCGB1A1
+          - SCGB3A2
+          - KRT8
+          - KRT18
+          - CYP2F2
+        exclude:
+          - MUC5AC
+          - CHGA
+
+  Endothelial:
+    # Level 3 under Blood_Endothelial (Level 2)
+    Blood_Endothelial:
+      Tip_Cell:
+        genes:
+          - DLL4
+          - CXCR4
+          - APLN
+          - ANGPT2
+          - KDR
+        exclude:
+          - JAG1
+
+      Stalk_Cell:
+        genes:
+          - JAG1
+          - NOTCH1
+          - HEY1
+          - HEY2
+          - ENG
+        exclude:
+          - DLL4
+
+      Arterial:
+        genes:
+          - GJA5
+          - GJA4
+          - SEMA3G
+          - EFNB2
+          - HEY1
+        exclude:
+          - NR2F2
+
+      Venous:
+        genes:
+          - NR2F2
+          - ACKR1
+          - SELP
+          - VWF
+        exclude:
+          - GJA5
+          - EFNB2
+
+    # Lymphatic_Endothelial has no Level 3
+
+# ===========================================================================
+# BIOLOGICAL PROGRAMS (orthogonal to hierarchy)
+# ===========================================================================
+Programs:
+  Cycling:
+    genes:
+      - MKI67
+      - TOP2A
+      - PCNA
+      - BIRC5
+      - CCNB1
+      - CDK1
+      - UBE2C
+
+  IFN_Alpha_Response:
+    genes:
+      - IFNA1
+      - IRF7
+      - STAT1
+      - MX1
+      - OAS1
+      - ISG15
+
+  IFN_Gamma_Response:
+    genes:
+      - IFNG
+      - IRF1
+      - STAT1
+      - GBP1
+      - CXCL9
+      - CXCL10
+      - IDO1
+
+  Hypoxia:
+    genes:
+      - HIF1A
+      - EPAS1
+      - VEGFA
+      - LDHA
+      - PDK1
+      - SLC2A1
+      - CA9
+      - BNIP3
+
+  EMT:
+    genes:
+      - VIM
+      - FN1
+      - SNAI1
+      - SNAI2
+      - TWIST1
+      - ZEB1
+      - ZEB2
+
+  Stress_Response:
+    genes:
+      - HSP90AA1
+      - HSPA1A
+      - HSPB1
+      - DNAJB1
+      - HSF1
+
+# ===========================================================================
+# HIERARCHY SUMMARY
+# ===========================================================================
+# Level 1 → Level 2 → Level 3
+#
+# Immune → T_cells → CD4_T, CD8_T, Treg, T_exhausted, T_gd, T_memory
+#       → B_cells → Naive_B, Memory_B
+#       → Plasma (no L3)
+#       → Myeloid → Monocyte, Classical_Mono, Non_classical_Mono,
+#                   Macrophage, TAM, M1_Mac, M2_Mac, DC, cDC1, cDC2, pDC
+#       → NK_cells → NK_cytotoxic
+#       → Mast_cells (no L3)
+#
+# Stromal → CAF → myCAF, iCAF, apCAF, rCAF, Myofibroblast
+#         → Pericyte (no L3)
+#         → Smooth_Muscle → Vascular_SMC
+#         → Osteoblast (no L3)
+#         → Osteoclast (no L3)
+#
+# Epithelial → Luminal → Prostate_Luminal, Secretory
+#            → Basal → Prostate_Basal
+#            → Neuroendocrine (no L3)
+#
+# Endothelial → Blood_Endothelial → Tip_Cell, Stalk_Cell, Arterial, Venous
+#             → Lymphatic_Endothelial (no L3)

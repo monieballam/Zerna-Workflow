@@ -1,0 +1,17 @@
+node_modules
+dist
+build
+.next
+coverage
+.turbo
+out
+*.lock
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+.venv
+__pycache__
+*.pyc
+htmlcov
+.pytest_cache
+uv.lock

@@ -1,0 +1,91 @@
+# ============================================================
+# Universal Epithelial Marker Pack
+# Pan-cancer epithelial cell type markers (luminal, basal, prostate-specific)
+# ============================================================
+
+Lineage:
+  # Broad epithelial lineage marker
+  Epithelial:
+    include:
+      - EPCAM
+      - KRT8
+      - KRT18
+      - KRT19
+      - CDH1 # E-cadherin
+    exclude:
+      - PTPRC
+      - PECAM1
+      - VWF
+      - COL1A1
+      - COL1A2
+
+Subtypes:
+  Epithelial:
+    # Luminal epithelial cells
+    Luminal:
+      genes:
+        - EPCAM
+        - KRT8
+        - KRT18
+        - KRT19
+        - CDH1
+        - MUC1
+        - TACSTD2
+        - CLDN4
+
+    # Basal epithelial cells
+    Basal:
+      genes:
+        - KRT5
+        - KRT14
+        - KRT15
+        - KRT17
+        - TP63
+        - ITGA6
+        - DSG3
+        - LGALS3
+
+    # Prostate-specific luminal
+    Prostate_Luminal:
+      genes:
+        - KLK3 # PSA
+        - KLK2
+        - AR
+        - NKX3-1
+        - TMPRSS2
+        - ACPP
+        - FOLH1
+        - SLC45A3
+
+    # Prostate-specific basal
+    Prostate_Basal:
+      genes:
+        - KRT5
+        - KRT14
+        - TP63
+        - ITGA6
+        - CD44
+        - ITGB4
+
+    # Neuroendocrine (pan-cancer)
+    Neuroendocrine:
+      genes:
+        - CHGA
+        - CHGB
+        - SYP
+        - INS
+        - INSM1
+        - ASCL1
+        - NCAM1
+        - DLL3
+
+    # Transitional/intermediate
+    Intermediate:
+      genes:
+        - KRT19
+        - TACSTD2
+        - EPCAM
+        - CLDN4
+        - KRT7
+        - KRT8
+        - KRT18

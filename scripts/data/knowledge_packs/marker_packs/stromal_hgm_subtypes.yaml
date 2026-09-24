@@ -1,0 +1,269 @@
+# ============================================================
+# Stromal HGM subtypes (from annotation_from_rds stromal_subtype_markers.json)
+# Extends universal_stromal with iCAF_1/2, adiCAF, Pericyte_1/2, SMC, Osteoblast/Osteocyte,
+# Chondrocyte, CAR cell for accurate stromal hierarchy (level1/2/3).
+# ============================================================
+
+Subtypes:
+  Stromal:
+    # Inflammatory CAF variants
+    iCAF_1:
+      genes:
+        - NTM
+        - NR2F1
+        - IGFBP2
+        - PCDH7
+        - DPF3
+        - POSTN
+        - GPC3
+        - EPHA7
+        - GDF5
+        - CSMD2
+        - CACNB4
+        - CMKLR1
+        - LOXL1
+        - LAMA2
+        - ADAM12
+        - S1PR2
+        - PLAU
+        - GCNT1
+        - UCHL1
+    # High-coverage panel: core = protein-coding anchors; support = lncRNAs + extras (not used for coverage gate)
+    iCAF_2:
+      core_genes:
+        - LRRC15
+        - SDC1
+        - MME
+        - TNFSF11
+        - FLRT3
+        - GJB2
+        - FNDC1
+        - KIF26B
+        - DPEP1
+        - POSTN
+        - COL3A1
+      support_genes:
+        - LINC01705
+        - LINC02257
+        - LINC01050
+        - MIAT
+        - LINC03018
+        - GALNT5
+        - LSAMP
+        - LINC02377
+        - LINC02126
+      genes:
+        - LRRC15
+        - SDC1
+        - MME
+        - TNFSF11
+        - FLRT3
+        - GJB2
+        - FNDC1
+        - KIF26B
+        - DPEP1
+        - POSTN
+        - COL3A1
+        - LINC01705
+        - LINC02257
+        - LINC01050
+        - MIAT
+        - LINC03018
+        - GALNT5
+        - LSAMP
+        - LINC02377
+        - LINC02126
+    # Adipogenic CAF: core/support + not_genes; require core coverage >= 0.6 and separation for call
+    adiCAF:
+      core_genes:
+        - PLA2G2A
+        - PI16
+        - C3
+        - SFRP2
+        - PRG4
+        - MFAP4
+      support_genes:
+        - CYP4B1
+        - FAM180B
+        - SERPINA3
+        - IGF1
+        - NOX4
+        - CILP
+        - TNXB
+        - EFEMP1
+        - RAMP2
+        - GALNT15
+      not_genes:
+        - RGS5
+        - PDGFRB
+        - MYH11
+        - PTPRC
+        - LST1
+      genes:
+        - PLA2G2A
+        - CYP4B1
+        - MYOC
+        - C3
+        - PI16
+        - PRG4
+        - FAM180B
+        - SFRP2
+        - SERPINA3
+        - IGF1
+        - C16orf89
+        - NOX4
+        - CILP
+        - FGF14
+        - TNXB
+        - MFAP4
+        - EFEMP1
+        - NOVA1
+        - RAMP2
+        - GALNT15
+    # Smooth muscle
+    SMC:
+      genes:
+        - MUSTN1
+        - DES
+        - RERGL
+        - MYH11
+        - COL4A5
+        - ITIH3
+        - CSDC2
+        - CASQ2
+        - DGKG
+        - SCN3A
+        - PLN
+        - NMNAT2
+        - MYOCD
+        - SUSD5
+        - FHL5
+        - BRSK2
+        - AKAP6
+        - SPEG
+        - ITGA8
+    # Pericyte subtypes
+    Pericyte_1:
+      genes:
+        - AVPR1A
+        - FAM162B
+        - TCIM
+        - GPR4
+        - GJA4
+        - PXDNL
+        - TMEM74B
+        - KCNJ8
+        - EDNRB
+        - PLA2G5
+        - CECR2
+        - TNFRSF21
+        - CD36
+        - ADAMTS4
+        - GPER1
+        - PDE10A
+        - IL6
+        - SIK1
+        - HIGD1B
+    Pericyte_2:
+      genes:
+        - GRP
+        - GRM8
+        - LZTS1-AS1
+        - RGS7BP
+        - SCG2
+        - ACP5
+        - MMP9
+        - FOXS1
+        - SALRNA2
+        - TPPP3
+        - RBP1
+        - NRG3
+        - MMP11
+        - LRRC36
+        - TMC4
+        - PRKCG
+        - ABCG2
+        - HSD11B2
+    # Osteoblast lineage
+    Osteoblast:
+      genes:
+        - WDR72
+        - WIF1
+        - CHAD
+        - KLK4
+        - IFITM5
+        - INSC
+        - ANO5
+        - SPP1
+        - BGLAP
+        - CA2
+        - NCAM1
+        - MEGF10
+        - LRP4-AS1
+        - LRP4
+        - SGCG
+        - LINC01060
+        - VIT
+        - CDH15
+        - TMEM150C
+        - DIPK1C
+    Osteocyte:
+      genes:
+        - MEPE
+        - DMP1
+        - PHEX
+        - PTCHD1-AS
+        - PTPRZ1
+        - LNCAROD
+        - CELF5
+        - COX6A2
+        - ZNF385B
+        - SCN9A
+        - SYT12
+        - DIRAS2
+        - FSTL4
+        - VWC2L
+        - CNKSR2
+        - FAM166B
+        - LINC02497
+        - CHRM3
+        - LOXL4
+    # Other stromal
+    Chondrocyte:
+      genes:
+        - COL2A1
+        - S100A1
+        - FGFBP2
+        - MATN4
+        - HAPLN1
+        - COL9A3
+        - COL9A2
+        - SNORC
+        - CLEC3A
+        - MIA
+        - COL11A2
+        - CNMD
+        - COMP
+        - COL10A1
+        - TRPV4
+        - TSPAN2
+        - NGEF
+        - AOC2
+        - CLIC3
+        - CILP2
+    CAR cell:
+      genes:
+        - CHL1
+        - VEGFC
+        - TMEM132C
+        - ADAM28
+        - COL28A1
+        - NECAB1
+        - TF
+        - MROCKI
+        - CHRDL1
+        - SLC7A10
+        - CP
+        - LINC02384
+        - MYO16
+        - RIPOR3

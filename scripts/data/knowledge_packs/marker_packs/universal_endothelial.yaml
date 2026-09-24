@@ -1,0 +1,65 @@
+# ============================================================
+# Universal Endothelial Marker Pack
+# Pan-cancer endothelial cell type markers (blood endothelial, lymphatic)
+# ============================================================
+
+Lineage:
+  # Broad endothelial lineage marker
+  Endothelial:
+    include:
+      - PECAM1 # CD31
+      - VWF
+      - CDH5 # VE-cadherin
+      - KDR # VEGFR2
+      - ENG # Endoglin
+    exclude:
+      - PTPRC
+      - EPCAM
+      - KRT8
+      - KRT18
+      - COL1A1
+      - COL1A2
+
+Subtypes:
+  Endothelial:
+    # Blood endothelial cells
+    Blood_Endothelial:
+      genes:
+        - PECAM1
+        - VWF
+        - CDH5
+        - KDR
+        - ENG
+        - ESAM
+        - CLDN5
+        - RAMP2
+        - ERG
+        - TEK
+
+    # Lymphatic endothelial cells
+    Lymphatic_Endothelial:
+      genes:
+        - PROX1
+        - FLT4 # VEGFR3
+        - LYVE1
+        - PDPN # Podoplanin
+        - CCL21
+        - FOXC2
+
+    # Tip cells (angiogenic)
+    Tip_Cell:
+      genes:
+        - DLL4
+        - CXCR4
+        - APLN
+        - ANGPT2
+        - KDR
+
+    # Stalk cells (angiogenic)
+    Stalk_Cell:
+      genes:
+        - JAG1
+        - NOTCH1
+        - HEY1
+        - HEY2
+        - ENG

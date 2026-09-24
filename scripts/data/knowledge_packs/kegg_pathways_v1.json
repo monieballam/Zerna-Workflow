@@ -1,0 +1,79 @@
+{
+  "pathways": {
+    "hsa04060 Cytokine-cytokine receptor interaction": [
+      "IL2",
+      "IL2RA",
+      "IL6",
+      "IL6R",
+      "TNF",
+      "TNFRSF1A",
+      "IFNG",
+      "IFNGR1",
+      "CCL5",
+      "CCR5",
+      "CXCL12",
+      "CXCR4",
+      "CSF2"
+    ],
+    "hsa04151 PI3K-Akt signaling": [
+      "PIK3CA",
+      "PIK3CB",
+      "AKT1",
+      "AKT2",
+      "MTOR",
+      "PTEN",
+      "PDK1",
+      "GSK3B",
+      "BAD",
+      "FOXO3",
+      "TSC1",
+      "TSC2",
+      "RPTOR"
+    ],
+    "hsa04010 MAPK signaling": [
+      "MAPK1",
+      "MAPK3",
+      "MAP2K1",
+      "MAP2K2",
+      "RAF1",
+      "BRAF",
+      "KRAS",
+      "HRAS",
+      "SOS1",
+      "GRB2",
+      "FOS",
+      "JUN",
+      "ELK1"
+    ],
+    "hsa04110 Cell cycle": [
+      "CDK1",
+      "CDK2",
+      "CDK4",
+      "CDK6",
+      "CCND1",
+      "CCNE1",
+      "CCNA2",
+      "CCNB1",
+      "RB1",
+      "E2F1",
+      "TP53",
+      "CDKN1A",
+      "CDKN2A"
+    ],
+    "hsa04210 Apoptosis": [
+      "CASP3",
+      "CASP8",
+      "CASP9",
+      "BAX",
+      "BCL2",
+      "CYCS",
+      "APAF1",
+      "FAS",
+      "FASLG",
+      "BID",
+      "XIAP",
+      "DIABLO",
+      "TNFRSF10A"
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies (rebuilt in container)
+node_modules
+.pnp
+.pnp.js
+
+# Python artifacts
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+*.egg-info
+*.egg
+.eggs
+build
+dist
+sdist
+wheels
+develop-eggs
+.installed.cfg
+venv
+env
+.venv
+
+# Testing
+coverage
+.hypothesis
+.pytest_cache
+.coverage
+.coverage.*
+*.cover
+htmlcov
+
+# Build outputs
+.next
+out
+.turbo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+
+# Temporary
+tmp
+temp
+
+# Infrastructure (not needed in app images)
+infra
+.github
+.husky
+.kiro
+
+# Documentation
+*.md
+!README.md
+LICENSE

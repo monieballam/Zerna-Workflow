@@ -1,0 +1,126 @@
+{
+  "markers": {
+    "T cells": ["CD3D", "CD3E", "CD3G", "CD2", "CD28", "TRAC", "TRBC1", "IL7R", "LEF1", "TCF7"],
+    "B cells": ["CD19", "MS4A1", "CD79A", "CD79B", "PAX5", "BANK1", "BLK", "CD22", "IGHM", "IGHD"],
+    "NK cells": [
+      "NKG7",
+      "GNLY",
+      "KLRD1",
+      "KLRB1",
+      "KLRC1",
+      "NCAM1",
+      "FCGR3A",
+      "PRF1",
+      "GZMB",
+      "NCR1"
+    ],
+    "Monocytes": [
+      "CD14",
+      "LYZ",
+      "S100A8",
+      "S100A9",
+      "FCGR3A",
+      "CST3",
+      "VCAN",
+      "FCN1",
+      "CD68",
+      "ITGAM"
+    ],
+    "Macrophages": [
+      "CD68",
+      "CD163",
+      "MRC1",
+      "MSR1",
+      "MARCO",
+      "CSF1R",
+      "MERTK",
+      "SIGLEC1",
+      "APOE",
+      "C1QA"
+    ],
+    "Dendritic cells": [
+      "ITGAX",
+      "HLA-DRA",
+      "HLA-DRB1",
+      "CLEC9A",
+      "XCR1",
+      "FCER1A",
+      "CD1C",
+      "CLEC10A",
+      "IRF8",
+      "BATF3"
+    ],
+    "Neutrophils": [
+      "CSF3R",
+      "FCGR3B",
+      "CXCR2",
+      "S100A8",
+      "S100A9",
+      "MMP9",
+      "ELANE",
+      "MPO",
+      "CEACAM8",
+      "FUT4"
+    ],
+    "Mast cells": [
+      "KIT",
+      "TPSAB1",
+      "TPSB2",
+      "CPA3",
+      "HPGDS",
+      "HDC",
+      "MS4A2",
+      "FCER1A",
+      "GATA2",
+      "IL1RL1"
+    ],
+    "Plasma cells": [
+      "SDC1",
+      "TNFRSF17",
+      "SLAMF7",
+      "XBP1",
+      "IRF4",
+      "PRDM1",
+      "MZB1",
+      "JCHAIN",
+      "IGHG1",
+      "IGHA1"
+    ],
+    "Fibroblasts": [
+      "COL1A1",
+      "COL1A2",
+      "COL3A1",
+      "DCN",
+      "LUM",
+      "FAP",
+      "PDGFRA",
+      "THY1",
+      "VIM",
+      "ACTA2"
+    ],
+    "Endothelial cells": [
+      "PECAM1",
+      "CDH5",
+      "VWF",
+      "KDR",
+      "FLT1",
+      "ENG",
+      "CLDN5",
+      "EMCN",
+      "ERG",
+      "TIE1"
+    ],
+    "Epithelial cells": [
+      "EPCAM",
+      "KRT18",
+      "KRT19",
+      "KRT8",
+      "CDH1",
+      "CLDN4",
+      "MUC1",
+      "TJP1",
+      "OCLN",
+      "KRT7"
+    ]
+  }
+}

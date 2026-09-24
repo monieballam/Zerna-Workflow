@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zerna-gpu-abstraction"
+version = "0.1.0"
+description = "Zerna Heterogeneous GPU Abstraction - Unified compute interface for CUDA, ROCm, Metal, OpenCL, TPU"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.10.0",
+    "numpy>=2.0.0",
+]
+
+[project.optional-dependencies]
+# Optional GPU backend dependencies
+cuda = [
+    "cupy-cuda12x>=13.0.0",  # NVIDIA CUDA
+    "torch>=2.5.0",
+]
+rocm = [
+    "torch>=2.5.0",  # PyTorch with ROCm support (requires special installation)
+]
+metal = [
+    "torch>=2.5.0",  # PyTorch with Metal Performance Shaders (MPS) backend
+]
+opencl = [
+    "pyopencl>=2024.1",  # Intel and other OpenCL devices
+]
+tpu = [
+    "jax[tpu]>=0.4.35",  # Google TPU support
+]
+all = [
+    "cupy-cuda12x>=13.0.0",
+    "torch>=2.5.0",
+    "pyopencl>=2024.1",
+    "jax[tpu]>=0.4.35",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.100.0",
+]
+
+[tool.uv.sources]
+zerna-contracts = { workspace = true }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["zerna_gpu_abstraction*"]
+exclude = ["tests*"]
+namespaces = false

@@ -1,0 +1,144 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zerna-platform"
+version = "0.1.0"
+description = "Zerna Platform - Multi-user cloud-native single-cell analysis platform"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools]
+packages = []
+
+[tool.uv.workspace]
+members = [
+    "apps/api",
+    "services/compute",
+    "services/gpu_abstraction",
+    "methods",
+    "workflows",
+    "packages/contracts",
+]
+
+[dependency-groups]
+dev = [
+    "aiosqlite>=0.19.0",
+    "faker>=33.0.0",
+    "fakeredis>=2.21.0",
+    "httpx>=0.28.0",
+    "ruff>=0.8.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+    "mypy>=1.13.0",
+    "hypothesis>=6.100.0",
+    "types-pyyaml>=6.0.12.20260408",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+exclude = [
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+    "ARG001", # legacy unused function args in routes/tests
+    "ARG002", # legacy unused method args in routes/tests
+    "ARG005", # legacy unused lambda args in tests
+    "B007", # unused loop vars in property tests
+    "B008", # FastAPI dependency injection uses Depends in defaults
+    "B011", # legacy assert patterns in tests
+    "B017", # broad assert-raises patterns in tests
+    "B904", # legacy exception re-raise style
+    "B905", # strict zip not yet adopted repo-wide
+    "C401", # set comprehension cleanup tracked separately
+    "C416", # comprehension cleanup tracked separately
+    "E402", # legacy delayed imports in tests
+    "E741", # ambiguous variable names in legacy property tests
+    "F841", # legacy unused locals
+    "SIM102", # simplification cleanup tracked separately
+    "SIM103", # simplification cleanup tracked separately
+    "SIM105", # suppress cleanup tracked separately
+    "SIM108", # ternary cleanup tracked separately
+    "SIM110", # builtin simplification tracked separately
+    "SIM117", # with-statement cleanup tracked separately
+    "UP028", # yield-from cleanup tracked separately
+    "UP042", # StrEnum migration tracked separately
+    "W291", # legacy trailing whitespace debt
+    "W293", # legacy blank-line whitespace debt
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"] # unused imports in __init__.py
+"apps/api/routes/*.py" = ["B008", "B904"] # FastAPI dependency injection and exception handling patterns
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+asyncio_mode = "auto"
+markers = [
+    "property: property-based tests using Hypothesis",
+    "unit: unit tests",
+    "integration: integration tests",
+    "slow: slow-running tests",
+    "uat: user acceptance tests for critical workflows and performance",
+    "deployment_smoke: release / explorer contract checks (run via scripts/explorer_deployment_smoke.sh)",
+]
+
+[tool.coverage.run]
+source = ["apps", "services", "methods", "workflows", "packages"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

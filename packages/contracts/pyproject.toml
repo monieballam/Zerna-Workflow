@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zerna-contracts"
+version = "0.1.0"
+description = "Zerna Shared Contracts - Pydantic v2 schemas and shared types"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.10.0",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["zerna_contracts*"]
+exclude = ["tests*", "examples*"]
+namespaces = false

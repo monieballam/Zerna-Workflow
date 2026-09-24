@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zerna-compute"
+version = "0.1.0"
+description = "Zerna Compute Plane - Nextflow orchestrator and pipeline execution"
+requires-python = ">=3.11"
+dependencies = [
+    "zerna-methods",
+    "pydantic>=2.10.0",
+    "boto3>=1.35.0",  # AWS S3 for artifacts
+    "opentelemetry-api>=1.29.0",
+    "opentelemetry-sdk>=1.29.0",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[tool.uv.sources]
+zerna-contracts = { workspace = true }
+zerna-methods = { workspace = true }
+
+[tool.setuptools]
+packages = ["services.compute"]
+include-package-data = true
+
+[tool.setuptools.package-dir]
+"services.compute" = "."
+
+[tool.setuptools.package-data]
+"services.compute" = ["nextflow/**/*.nf", "nextflow/**/*.config"]

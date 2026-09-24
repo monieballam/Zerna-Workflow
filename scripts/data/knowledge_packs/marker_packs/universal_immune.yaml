@@ -1,0 +1,203 @@
+# ============================================================
+# Universal Immune Marker Pack
+# Pan-cancer immune cell type markers (T, B, NK, plasma, myeloid)
+# ============================================================
+
+Lineage:
+  # Broad immune lineage marker
+  Immune:
+    include:
+      - PTPRC # CD45
+    exclude:
+      - EPCAM
+      - KRT8
+      - KRT18
+      - PECAM1
+      - VWF
+      - COL1A1
+      - COL1A2
+
+Subtypes:
+  Immune:
+    # T cells (general)
+    T_cells:
+      genes:
+        - CD3D
+        - CD3E
+        - CD3G
+        - TRAC
+        - LCK
+        - CD2
+        - CD5
+        - CD7
+      not_genes_soft:
+        - NKG7
+        - GNLY
+        - KLRD1
+
+    # CD4+ T helper cells
+    CD4_T:
+      genes:
+        - CD4
+        - IL7R
+        - CCR7
+        - LTB
+        - CD40LG
+        - IL2
+        - IL4
+
+    # CD8+ cytotoxic T cells
+    CD8_T:
+      genes:
+        - CD8A
+        - CD8B
+        - GZMB
+        - PRF1
+        - NKG7
+        - IFNG
+        - TBX21
+        - EOMES
+
+    # CD8+ exhausted (HGM / Dashboard V4 style)
+    CD8_exhausted:
+      genes:
+        - CD8A
+        - PDCD1
+        - CTLA4
+        - LAG3
+        - TIGIT
+    # CD8+ effector / activated
+    CD8_effector:
+      genes:
+        - CD8A
+        - IFNG
+        - GZMB
+        - PRF1
+
+    # Regulatory T cells
+    Treg:
+      genes:
+        - FOXP3
+        - IL2RA # CD25
+        - CTLA4
+        - TIGIT
+        - IKZF2 # Helios
+        - IL10
+
+    # Gamma-delta T cells
+    T_gd:
+      genes:
+        - TRDC
+        - TRGC1
+        - TRGC2
+        - KLRB1
+
+    # B cells
+    B_cells:
+      genes:
+        - MS4A1 # CD20
+        - CD79A
+        - CD79B
+        - CD74
+        - PAX5
+        - CD19
+        - CD22
+
+    # Plasma cells
+    Plasma:
+      genes:
+        - MZB1
+        - XBP1
+        - JCHAIN
+        - IRF4
+        - SDC1 # CD138
+        - PRDM1 # BLIMP1
+
+    # NK cells (NOT-T gate: exclude T cells by low TCR; soft reject CD8 to prefer CD8_T when TRAC+CD8 high)
+    NK:
+      genes:
+        - NKG7
+        - KLRD1 # CD94
+        - PRF1
+        - NCAM1 # CD56
+      support_genes:
+        - GNLY
+        - KLRB1 # CD161
+        - KLRF1
+        - NCR1 # NKp46
+        - FCGR3A # CD16
+      not_genes:
+        - TRAC
+        - CD3D
+        - CD3E
+      not_genes_soft:
+        - CD8A
+        - CD8B
+
+    # Monocytes
+    Monocyte:
+      genes:
+        - CD14
+        - S100A8
+        - S100A9
+        - FCGR3A # CD16
+        - CSF1R
+        - CD68
+        - LYZ
+
+    # Macrophages
+    Macrophage:
+      genes:
+        - CD68
+        - C1QA
+        - C1QB
+        - C1QC
+        - APOE
+        - MRC1 # CD206
+        - MSR1 # CD204
+        - MARCO
+
+    # M1 (inflammatory) macrophages - HGM / Dashboard V4 style
+    M1:
+      genes:
+        - CD86
+        - IL12B
+        - TNF
+    # M2 (immunosuppressive) macrophages
+    M2:
+      genes:
+        - CD163
+        - MRC1
+        - IL10
+
+    # Dendritic cells
+    DC:
+      genes:
+        - FCER1A # CD303
+        - CLEC10A # CD301
+        - ITGAX # CD11c
+        - CD1C
+        - FLT3
+        - ZBTB46
+        - IRF8
+
+    # Neutrophils
+    Neutrophil:
+      genes:
+        - FCGR3B # CD16b
+        - CSF3R
+        - S100A8
+        - S100A9
+        - CXCR2
+        - CEACAM8
+        - MPO
+
+    # Mast cells
+    Mast:
+      genes:
+        - TPSAB1
+        - TPSB2
+        - CPA3
+        - KIT # CD117
+        - MS4A2 # FCER1B
+        - HDC

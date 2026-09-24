@@ -1,0 +1,261 @@
+services:
+  # PostgreSQL - Primary database for Control Plane and Temporal
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-zerna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zerna_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-zerna}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-zerna}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Cache, session storage, and task queue
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-zerna_redis_password} --appendonly yes
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Temporal Server - Workflow orchestration
+  temporal:
+    image: temporalio/auto-setup:1.22.4
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-zerna}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-zerna_dev_password}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=/etc/temporal/config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=false
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    volumes:
+      - temporal_data:/etc/temporal
+      - ./config/dynamicconfig:/etc/temporal/config/dynamicconfig:ro
+    networks:
+      - zerna-network
+    ports:
+      - '${TEMPORAL_PORT:-7233}:7233'
+      - '${TEMPORAL_UI_PORT:-8080}:8080'
+    healthcheck:
+      test: ['CMD', 'tctl', '--address', 'temporal:7233', 'cluster', 'health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Jaeger - Distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    profiles: ['observability']
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=memory
+    ports:
+      - '${JAEGER_UI_PORT:-16686}:16686'
+      - '${JAEGER_COLLECTOR_PORT:-4317}:4317'
+      - '${JAEGER_COLLECTOR_HTTP_PORT:-4318}:4318'
+      - '14268:14268'
+      - '6831:6831/udp'
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:14269/']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO - S3-compatible object storage for local development
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      # Default host ports match .env.example: API on host uses localhost:19000 (see S3_ENDPOINT_URL).
+      - '${MINIO_PORT:-19000}:9000'
+      - '${MINIO_CONSOLE_PORT:-19001}:9001'
+    volumes:
+      - minio_data:/data
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO Client - Initialize buckets
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set zerna http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
+      mc mb --ignore-existing zerna/zerna-datasets-dev;
+      mc mb --ignore-existing zerna/zerna-artifacts-dev;
+      mc anonymous set download zerna/zerna-datasets-dev;
+      mc anonymous set download zerna/zerna-artifacts-dev;
+      exit 0;
+      "
+    networks:
+      - zerna-network
+
+  # Temporal Worker - supervised pipeline execution
+  worker:
+    build:
+      context: .
+      dockerfile: workflows/Dockerfile
+      args:
+        ZERNA_INSTALL_OPTIONAL_R_BACKENDS: ${ZERNA_INSTALL_OPTIONAL_R_BACKENDS:-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    init: true
+    shm_size: ${WORKER_SHM_SIZE:-2gb}
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-zerna}:${POSTGRES_PASSWORD:-zerna_dev_password}@postgres:5432/${POSTGRES_DB:-zerna}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-zerna}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zerna_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-zerna}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-zerna_redis_password}@redis:6379/0
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-zerna_redis_password}
+      REDIS_DB: 0
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_HOST: temporal
+      TEMPORAL_PORT: 7233
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-minioadmin}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-minioadmin}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_DATASETS_BUCKET: ${S3_DATASETS_BUCKET:-zerna-datasets-dev}
+      S3_ARTIFACTS_BUCKET: ${S3_ARTIFACTS_BUCKET:-zerna-artifacts-dev}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      ZERNA_CHECKPOINT_DIR: /var/lib/zerna/checkpoints
+      CELLTYPIST_FOLDER: /var/lib/zerna/celltypist
+      ZERNA_MAX_CONCURRENT_PIPELINES: ${ZERNA_MAX_CONCURRENT_PIPELINES:-1}
+      WORKER_READY_FILE: /tmp/zerna-worker-ready
+      LOG_FORMAT: text
+      # Override .env if set: in-process cluster/embed need a Numba layer that works without pip tbb
+      NUMBA_THREADING_LAYER: workqueue
+    volumes:
+      - worker_checkpoints:/var/lib/zerna/checkpoints
+      - worker_celltypist_cache:/var/lib/zerna/celltypist
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD-SHELL', 'test -f /tmp/zerna-worker-ready']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    profiles: ['observability']
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - '${PROMETHEUS_PORT:-9090}:9090'
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:9090/-/healthy']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Grafana - Dashboards
+  grafana:
+    image: grafana/grafana:10.2.0
+    profiles: ['observability']
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-zerna_grafana}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    ports:
+      - '${GRAFANA_PORT:-3001}:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - zerna-network
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/api/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  zerna-network:
+    driver: bridge
+    name: zerna-network
+
+volumes:
+  postgres_data:
+    name: zerna-postgres-data
+  redis_data:
+    name: zerna-redis-data
+  temporal_data:
+    name: zerna-temporal-data
+  minio_data:
+    name: zerna-minio-data
+  prometheus_data:
+    name: zerna-prometheus-data
+  grafana_data:
+    name: zerna-grafana-data
+  worker_checkpoints:
+    name: zerna-worker-checkpoints
+  worker_celltypist_cache:
+    name: zerna-worker-celltypist-cache

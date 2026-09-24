@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zerna-workflows"
+version = "0.1.0"
+description = "Zerna Temporal Workflows - Product-level workflow orchestration"
+requires-python = ">=3.11"
+dependencies = [
+    "zerna-api",
+    "zerna-contracts",
+    "zerna-methods",
+    "pydantic>=2.10.0",
+    "temporalio>=1.8.0",
+    "boto3>=1.35.0",  # AWS S3
+    "sqlalchemy>=2.0.36",
+    "asyncpg>=0.30.0",
+    "openai>=1.59.0",  # OpenAI GPT-4 for LLM integration
+    "anthropic>=0.42.0",  # Anthropic Claude for LLM integration
+    "opentelemetry-api>=1.29.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.uv.sources]
+zerna-api = { workspace = true }
+zerna-contracts = { workspace = true }
+zerna-methods = { workspace = true }
+
+[tool.setuptools]
+packages = [
+    "workflows",
+    "workflows.annotation",
+    "workflows.cross_dataset_pathway",
+    "workflows.dataset_ingestion",
+    "workflows.export",
+    "workflows.run_execution",
+]
+
+[tool.setuptools.package-dir]
+workflows = "."
+"workflows.annotation" = "annotation"
+"workflows.cross_dataset_pathway" = "cross_dataset_pathway"
+"workflows.dataset_ingestion" = "dataset_ingestion"
+"workflows.export" = "export"
+"workflows.run_execution" = "run_execution"

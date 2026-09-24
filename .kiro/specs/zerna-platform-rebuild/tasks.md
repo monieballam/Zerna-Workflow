@@ -1,0 +1,1063 @@
+# Implementation Plan: Zerna Platform Rebuild
+
+## Overview
+
+This implementation plan breaks down the Zerna platform rebuild into discrete coding tasks. The platform consists of three primary subsystems: Control Plane (FastAPI + PostgreSQL + Redis + Temporal), Compute Plane (Nextflow + containerized methods + heterogeneous GPU support), and Frontend (Next.js 14 + React 19 + WebGL). The implementation follows a bottom-up approach, building foundational infrastructure first, then core services, compute capabilities, and finally the user interface.
+
+## Tasks
+
+- [ ] 1. Infrastructure and monorepo setup
+  - [x] 1.1 Initialize monorepo structure with pnpm workspaces
+    - Create root package.json with workspace configuration
+    - Set up directory structure: apps/, packages/, services/, methods/, workflows/
+    - Configure pnpm workspace protocol for internal dependencies
+    - Create turbo.json for build orchestration
+    - _Requirements: 18.1, 18.2_
+  - [x] 1.2 Set up Python environment with uv
+    - Initialize uv.lock for deterministic Python dependencies
+    - Configure pyproject.toml for each Python package
+    - Set up shared Python tooling (ruff, pytest, mypy)
+    - _Requirements: 18.1_
+  - [x] 1.3 Create shared contracts package
+    - Define Pydantic v2 base models in packages/contracts
+    - Create shared enums (RunStatus, ArtifactType, UserRole, etc.)
+    - Set up contract versioning strategy
+    - _Requirements: 12.1, 18.2_
+  - [x] 1.4 Set up Docker development environment
+    - Create docker-compose.yml with PostgreSQL, Redis, Temporal, Jaeger
+    - Configure service networking and volume mounts
+    - Create .env.example with required environment variables
+    - Write setup script for initial database and Redis configuration
+    - _Requirements: 14.1, 14.2_
+  - [x] 1.5 Configure linting and formatting
+    - Set up ruff for Python (apps/api, services/, methods/)
+    - Set up ESLint + Prettier for TypeScript (apps/web, packages/sdk)
+    - Configure pre-commit hooks with husky
+    - Add lint tasks to turbo.json
+    - _Requirements: 19.1_
+
+- [ ] 2. Database and data models
+  - [x] 2.1 Set up PostgreSQL schema with SQLAlchemy 2
+    - Create Base model with organization_id mixin
+    - Implement Organization, User, OrganizationUser models
+    - Implement Dataset, DatasetVersion models with JSONB metadata
+    - Implement PipelineTemplate, Run, Artifact models
+    - Implement AnnotationRevision, KnowledgePack models
+    - Implement AuditEvent model with immutability constraints
+    - Add composite indexes for multi-tenant queries
+    - _Requirements: 2.6, 11.1, 15.4_
+  - [x] 2.2 Create Alembic migration system
+    - Initialize Alembic with auto-generation from models
+    - Create initial migration with all tables
+    - Add migration testing in CI
+    - _Requirements: 18.1_
+  - [x] 2.3 Write property test for organization resource isolation
+    - **Property 3: Organization Resource Isolation**
+    - **Validates: Requirements 1.4, 11.1, 11.5**
+  - [x] 2.4 Write property test for audit event immutability
+    - **Property 4: Audit Event Immutability**
+    - **Validates: Requirements 1.5, 15.1, 15.2, 15.3, 15.5**
+
+- [ ] 3. Authentication and authorization service
+  - [x] 3.1 Implement OAuth2 + JWT authentication
+    - Create AuthService with token generation (RS256 signing)
+    - Implement password hashing with Argon2id
+    - Create login endpoint (POST /v1/auth/login)
+    - Create token refresh endpoint (POST /v1/auth/refresh)
+    - Store refresh tokens in Redis with 30-day TTL
+    - _Requirements: 1.1_
+  - [x] 3.2 Implement role-based access control
+    - Create permission checking middleware
+    - Implement check_permission method with role hierarchy
+    - Add organization membership verification
+    - Create decorators for endpoint authorization
+    - _Requirements: 1.2, 1.3, 1.4_
+  - [x] 3.3 Add authentication audit logging
+    - Log all authentication attempts as AuditEvents
+    - Include success/failure, IP address, user agent
+    - Implement rate limiting for failed attempts (5 attempts → 15-min lockout)
+    - _Requirements: 1.5, 29.1_
+  - [x] 3.4 Write property test for authentication token round trip
+    - **Property 1: Authentication Token Round Trip**
+    - **Validates: Requirements 1.1, 1.3**
+  - [x] 3.5 Write property test for role-based access control
+    - **Property 2: Role-Based Access Control**
+    - **Validates: Requirements 1.2, 1.3, 1.4**
+  - [x] 3.6 Write unit tests for authentication service
+    - Test token expiration handling
+    - Test invalid credentials rejection
+    - Test refresh token rotation
+    - _Requirements: 1.1_
+
+- [ ] 4. Dataset service and file handling
+  - [x] 4.1 Implement file format validation
+    - Create validators for h5ad, 10x h5, 10x mtx, csv, tsv formats
+    - Return descriptive errors for invalid files
+    - Extract metadata (cell count, gene count) from valid files
+    - _Requirements: 2.1, 2.3_
+  - [x] 4.2 Implement S3 upload coordination
+    - Create S3 client with organization-scoped paths
+    - Generate pre-signed upload URLs
+    - Implement multipart upload for large files
+    - Verify upload completion and file integrity
+    - _Requirements: 2.5, 11.2_
+  - [x] 4.3 Create DatasetService with CRUD operations
+    - Implement create_dataset with file validation
+    - Implement get_dataset with organization scoping
+    - Implement list_datasets with pagination and filtering
+    - Implement create_version for dataset versioning
+    - Store metadata in PostgreSQL with JSONB fields
+    - _Requirements: 2.2, 2.4, 2.6, 21.2_
+  - [x] 4.4 Create dataset API endpoints
+    - POST /v1/datasets (create dataset)
+    - GET /v1/datasets (list datasets with pagination)
+    - GET /v1/datasets/{id} (get dataset details)
+    - POST /v1/datasets/{id}/versions (create new version)
+    - Add request/response validation with Pydantic
+    - _Requirements: 12.1, 12.4, 17.4_
+  - [x] 4.5 Write property test for file format validation
+    - **Property 5: File Format Validation**
+    - **Validates: Requirements 2.1, 2.3**
+  - [x] 4.6 Write property test for dataset version uniqueness
+    - **Property 6: Dataset Version Uniqueness**
+    - **Validates: Requirements 2.4**
+  - [x] 4.7 Write property test for organization-scoped storage paths
+    - **Property 7: Organization-Scoped Storage Paths**
+    - **Validates: Requirements 2.5, 11.2**
+
+- [ ] 5. Pipeline template service
+  - [x] 5.1 Implement PipelineTemplate data model
+    - Create PipelineTemplate model with JSONB definition field
+    - Implement semantic versioning for templates
+    - Add organization scoping and immutability constraints
+    - _Requirements: 3.1, 3.5_
+  - [x] 5.2 Create PipelineService with template management
+    - Implement create_template with schema validation
+    - Implement get_template with version resolution
+    - Implement validate_parameters against template schema
+    - Implement resolve_methods to check MethodDefinition existence
+    - _Requirements: 3.2, 3.3, 3.4_
+  - [x] 5.3 Create pipeline template API endpoints
+    - POST /v1/pipelines (create template)
+    - GET /v1/pipelines (list templates)
+    - GET /v1/pipelines/{id} (get template with version)
+    - POST /v1/pipelines/{id}/validate (validate parameters)
+    - _Requirements: 12.1, 12.4_
+  - [x] 5.4 Write property test for pipeline template immutability
+    - **Property 9: Pipeline Template Immutability**
+    - **Validates: Requirements 3.5**
+  - [x] 5.5 Write property test for method dependency resolution
+    - **Property 10: Method Dependency Resolution**
+    - **Validates: Requirements 3.3**
+
+- [ ] 6. Run service and lifecycle management
+  - [x] 6.1 Implement Run data model and status tracking
+    - Create Run model with status enum (queued, running, completed, failed, cancelled)
+    - Add fields for parameters, software_versions, random_seed
+    - Add timestamps for started_at, completed_at
+    - _Requirements: 7.1, 7.2_
+  - [x] 6.2 Create RunService with lifecycle operations
+    - Implement create_run with parameter validation
+    - Implement start_run to initiate Temporal workflow
+    - Implement cancel_run with cleanup logic
+    - Implement get_run_status for status queries
+    - Implement update_progress for progress events from Compute Plane
+    - _Requirements: 7.1, 7.4, 7.5_
+  - [x] 6.3 Implement artifact association
+    - Create Artifact model with run_id foreign key
+    - Implement list_artifacts for run outputs
+    - Generate pre-signed S3 download URLs
+    - _Requirements: 7.3_
+  - [x] 6.4 Create run API endpoints
+    - POST /v1/runs (create run)
+    - GET /v1/runs (list runs with filtering)
+    - GET /v1/runs/{id} (get run details)
+    - POST /v1/runs/{id}/cancel (cancel run)
+    - GET /v1/runs/{id}/artifacts (list artifacts)
+    - _Requirements: 12.1, 12.4_
+  - [x] 6.5 Write property test for run cancellation cleanup
+    - **Property 18: Run Cancellation Cleanup**
+    - **Validates: Requirements 7.4**
+  - [x] 6.6 Write unit tests for run service
+    - Test status transitions (queued → running → completed)
+    - Test cancellation during different states
+    - Test artifact association
+    - _Requirements: 7.1, 7.4_
+
+- [ ] 7. Temporal workflow orchestration
+  - [x] 7.1 Set up Temporal server and workers
+    - Configure Temporal server connection in docker-compose
+    - Create worker process for Control Plane workflows
+    - Set up workflow and activity registration
+    - Configure retry policies and timeouts
+    - _Requirements: 13.1, 13.4_
+  - [x] 7.2 Implement DatasetIngestionWorkflow
+    - Create workflow for file upload → validation → metadata extraction
+    - Implement activities: validate_files, extract_metadata, store_in_s3
+    - Add compensation logic for failed uploads (delete S3 files)
+    - Emit event on completion to trigger downstream processing
+    - _Requirements: 2.7, 13.4_
+  - [x] 7.3 Implement RunExecutionWorkflow
+    - Create workflow for run lifecycle management
+    - Implement activities: resolve_template, invoke_nextflow, collect_artifacts
+    - Add retry logic for transient Nextflow communication errors
+    - Implement compensation for failed runs (cleanup resources)
+    - _Requirements: 4.1, 4.2, 13.3, 13.4_
+  - [x] 7.4 Implement ExportWorkflow
+    - Create workflow for h5ad generation → report compilation → S3 upload
+    - Implement activities: generate_h5ad, compile_report, upload_to_s3
+    - Add compensation logic for partial exports (delete files)
+    - _Requirements: 9.1, 9.4, 13.4_
+  - [x] 7.5 Write property test for Temporal workflow retry with exponential backoff
+    - **Property 25: Temporal Workflow Retry with Exponential Backoff**
+    - **Validates: Requirements 13.4, 16.4**
+
+- [ ] 8. Heterogeneous compute abstraction layer
+  - [x] 8.1 Implement hardware detection
+    - Create ComputeContext class with detect_hardware method
+    - Detect CUDA availability (nvidia-smi, torch.cuda)
+    - Detect ROCm availability (rocm-smi, torch with ROCm)
+    - Detect Metal availability (torch.backends.mps)
+    - Detect OpenCL availability (pyopencl)
+    - Detect TPU availability (jax with TPU backend)
+    - Return list of available ComputeBackend enums
+    - _Requirements: 30.1, 30.2, 30.3, 30.4, 30.5, 30.6, 30.7_
+  - [x] 8.2 Create unified TensorOps interface
+    - Define abstract TensorOps class with matmul, svd, knn methods
+    - Implement CUDATensorOps using cupy/pytorch
+    - Implement ROCmTensorOps using pytorch with ROCm
+    - Implement MetalTensorOps using pytorch with MPS
+    - Implement OpenCLTensorOps using pyopencl
+    - Implement TPUTensorOps using jax
+    - Implement CPUTensorOps as fallback
+    - _Requirements: 30.1_
+  - [x] 8.3 Implement backend selection logic
+    - Create select_backend method based on ComputePreference
+    - Handle GPU_REQUIRED: fail if no GPU available
+    - Handle GPU_PREFERRED: use GPU if available, else CPU
+    - Handle CPU_ONLY: always use CPU
+    - _Requirements: 30.8_
+  - [x] 8.4 Implement workload distribution
+    - Create scheduler for distributing methods across heterogeneous hardware
+    - Prioritize GPU-required methods for GPU resources
+    - Balance load across multiple GPUs of different types
+    - _Requirements: 30.9_
+  - [x] 8.5 Write property test for heterogeneous compute detection
+    - **Property 45: Heterogeneous Compute Detection**
+    - **Validates: Requirements 30.1, 30.2, 30.3, 30.4, 30.5, 30.6, 30.7**
+  - [ ] 8.6 Write property test for compute preference honoring
+    - **Property 46: Compute Preference Honoring**
+    - **Validates: Requirements 30.8**
+
+- [x] 9. Scientific method definitions - preprocessing
+  - [x] 9.1 Create MethodDefinition base class
+    - Define abstract MethodDefinition with input_schema, output_schema, execute
+    - Add compute_preference field (CPU_ONLY, GPU_PREFERRED, GPU_REQUIRED)
+    - Add name and version fields
+    - Create validation logic for input/output schemas
+    - _Requirements: 4.3_
+  - [x] 9.2 Implement QC filtering method
+    - Create QCFilterMethod with thresholds for cell count, gene count, mitochondrial percentage
+    - Use scanpy for filtering logic
+    - Return filtered h5ad with QC metrics
+    - _Requirements: 4.4_
+  - [x] 9.3 Implement doublet detection method
+    - Create DoubletDetectionMethod using scrublet
+    - Mark doublets in h5ad obs
+    - Return h5ad with doublet scores
+    - _Requirements: 4.5_
+  - [x] 9.4 Implement normalization method
+    - Create NormalizationMethod with log1p and scaling
+    - Use scanpy.pp.normalize_total and scanpy.pp.log1p
+    - Support GPU acceleration via compute context
+    - _Requirements: 4.6_
+  - [x] 9.5 Implement HVG selection method
+    - Create HVGSelectionMethod with configurable gene count
+    - Use scanpy.pp.highly_variable_genes
+    - Store HVG mask in h5ad var
+    - _Requirements: 4.7_
+  - [x] 9.6 Write unit tests for preprocessing methods
+    - Test QC filtering with edge cases (empty dataset, all cells filtered)
+    - Test doublet detection with known doublets
+    - Test normalization output ranges
+    - Test HVG selection with different gene counts
+    - _Requirements: 4.4, 4.5, 4.6, 4.7_
+
+- [x] 10. Scientific method definitions - dimensionality reduction
+  - [x] 10.1 Implement PCA method
+    - Create PCAMethod with configurable n_components
+    - Use scanpy.tl.pca with GPU support via compute context
+    - Store PCA coordinates in h5ad obsm
+    - _Requirements: 4.8_
+  - [x] 10.2 Implement batch correction methods
+    - Create HarmonyMethod for Harmony batch correction
+    - Create scVIMethod for scVI batch correction
+    - Detect batch keys from metadata
+    - Generate before/after embeddings for comparison
+    - Compute batch correction quality metrics (kBET, LISI)
+    - _Requirements: 4.11, 23.1, 23.2, 23.3, 23.4_
+  - [x] 10.3 Implement clustering methods
+    - Create LeidenMethod with configurable resolution
+    - Create LouvainMethod with configurable resolution
+    - Use scanpy.tl.leiden and scanpy.tl.louvain
+    - Store cluster assignments in h5ad obs
+    - _Requirements: 4.9_
+  - [x] 10.4 Implement embedding methods
+    - Create UMAPMethod with reproducible random seed
+    - Create tSNEMethod with reproducible random seed
+    - Use scanpy.tl.umap and scanpy.tl.tsne
+    - Store embeddings in h5ad obsm
+    - _Requirements: 4.10_
+  - [x] 10.5 Write unit tests for dimensionality reduction methods
+    - Test PCA with different n_components
+    - Test batch correction with multi-batch datasets
+    - Test clustering with different resolutions
+    - Test embedding reproducibility with fixed seeds
+    - _Requirements: 4.8, 4.9, 4.10, 4.11_
+
+- [x] 11. Scientific method definitions - annotation and analysis
+  - [x] 11.1 Implement cell type annotation method
+    - Create CellTypistMethod integrating CellTypist
+    - Generate confidence scores per cell
+    - Support hierarchical labels (tissue → lineage → cell_type)
+    - Store annotations in h5ad obs with provenance
+    - _Requirements: 5.1, 5.2, 5.3_
+  - [x] 11.2 Implement differential expression method
+    - Create DifferentialExpressionMethod for cluster comparisons
+    - Compute log fold change, p-values, adjusted p-values for all gene pairs
+    - Rank genes by statistical significance and effect size
+    - Store results as CSV artifact
+    - _Requirements: 4.12, 24.1, 24.2_
+  - [x] 11.3 Implement pathway scoring method
+    - Create PathwayScoringMethod using decoupler
+    - Support multiple pathway databases (MSigDB, GO, KEGG) via KnowledgePacks
+    - Generate per-cell pathway scores
+    - Store scores in h5ad obsm or layers
+    - _Requirements: 4.13, 25.1, 25.2, 25.3, 25.4_
+  - [x] 11.4 Implement ligand-receptor analysis method
+    - Create LigandReceptorMethod using LIANA
+    - Compute interaction scores between all cluster pairs
+    - Rank interactions by statistical significance
+    - Store results as CSV artifact
+    - _Requirements: 4.14, 26.1, 26.2, 26.3_
+  - [x] 11.5 Write property test for differential expression completeness
+    - **Property 36: Differential Expression Completeness**
+    - **Validates: Requirements 24.1, 24.2**
+  - [x] 11.6 Write property test for pathway score storage in h5ad
+    - **Property 37: Pathway Score Storage in H5AD**
+    - **Validates: Requirements 25.3, 25.4**
+
+- [x] 12. Nextflow pipeline orchestration
+  - [x] 12.1 Set up Nextflow DSL2 project structure
+    - Create main.nf with workflow definitions
+    - Create modules/ directory for method wrappers
+    - Configure nextflow.config with executor settings
+    - Set up container registry for method images
+    - _Requirements: 13.2_
+  - [x] 12.2 Implement SINGLE_CELL_PIPELINE workflow
+    - Create Nextflow workflow with method dependencies
+    - Wire QC → doublet → normalization → HVG → PCA → clustering → embedding
+    - Add conditional batch correction based on parameters
+    - Add DE, pathway, and ligand-receptor analysis steps
+    - Implement progress event emission to Control Plane
+    - _Requirements: 4.3, 4.17_
+  - [x] 12.3 Create Nextflow process wrappers for each method
+    - Wrap each MethodDefinition in Nextflow process
+    - Configure resource requirements (CPU, memory, GPU)
+    - Set up input/output channels
+    - Add error capture (stdout, stderr, exit code)
+    - _Requirements: 4.15, 4.16_
+  - [x] 12.4 Implement Nextflow-Temporal integration
+    - Create API endpoint for Temporal to invoke Nextflow
+    - Implement status polling from Nextflow to Temporal
+    - Add artifact collection after pipeline completion
+    - _Requirements: 13.3_
+  - [x] 12.5 Write property test for DAG execution ordering
+    - **Property 12: DAG Execution Ordering**
+    - **Validates: Requirements 4.3**
+  - [x] 12.6 Write property test for Nextflow pipeline idempotence
+    - **Property 26: Nextflow Pipeline Idempotence**
+    - **Validates: Requirements 13.5**
+  - [x] 12.7 Write property test for error capture on method failure
+    - **Property 14: Error Capture on Method Failure**
+    - **Validates: Requirements 4.16**
+
+- [x] 13. Annotation and knowledge pack services
+  - [x] 13.1 Implement KnowledgePack data model and service
+    - Create KnowledgePack model with semantic versioning
+    - Support pack types (cell_type_markers, pathway_database, ligand_receptor_pairs)
+    - Implement version preservation (no deletion of old versions)
+    - Store packs in S3 with schema validation
+    - _Requirements: 6.1, 6.2, 6.3, 6.5_
+  - [x] 13.2 Create KnowledgePackService with CRUD operations
+    - Implement create_knowledge_pack with schema validation
+    - Implement get_knowledge_pack with version resolution
+    - Implement list_knowledge_packs with filtering by type
+    - _Requirements: 6.1, 6.2_
+  - [x] 13.3 Implement AnnotationRevision data model
+    - Create AnnotationRevision model with revision numbering
+    - Store annotations as JSONB with hierarchical structure
+    - Link to KnowledgePack version for provenance
+    - Add approval workflow fields (approved_by, approved_at)
+    - _Requirements: 5.3, 5.4, 5.6_
+  - [x] 13.4 Create AnnotationService with revision management
+    - Implement create_revision for new annotations
+    - Implement edit_annotations to create new revision on manual edits
+    - Implement approve_revision for approval workflow
+    - Implement list_revisions for history
+    - _Requirements: 5.5, 5.6_
+  - [x] 13.5 Create annotation and knowledge pack API endpoints
+    - POST /v1/knowledge-packs (create pack)
+    - GET /v1/knowledge-packs (list packs)
+    - POST /v1/runs/{id}/annotations (create annotation revision)
+    - PATCH /v1/annotations/{id} (edit annotations)
+    - POST /v1/annotations/{id}/approve (approve revision)
+    - _Requirements: 12.1, 12.4_
+  - [x] 13.6 Write property test for annotation revision creation on edit
+    - **Property 15: Annotation Revision Creation on Edit**
+    - **Validates: Requirements 5.5**
+  - [x] 13.7 Write property test for knowledge pack version preservation
+    - **Property 17: Knowledge Pack Version Preservation**
+    - **Validates: Requirements 6.3**
+
+- [x] 14. Cross-dataset pathway analysis and LLM integration
+  - [x] 14.1 Implement CrossDatasetPathwayWorkflow in Temporal
+    - Create workflow for multi-dataset aggregation
+    - Implement activities: fetch_datasets, aggregate_pathways, call_llm
+    - Support privacy-preserving aggregation (no raw data sharing)
+    - _Requirements: 25.6, 25.7, 25.8_
+  - [x] 14.2 Create PathwayService for cross-dataset analysis
+    - Implement analyze_cross_dataset to identify patterns across datasets
+    - Aggregate pathway scores using meta-analysis methods
+    - Compute statistical significance for cross-dataset patterns
+    - Store analysis results with dataset references
+    - _Requirements: 25.6, 25.7, 25.10_
+  - [x] 14.3 Implement LLM integration for pathway interpretation
+    - Create LLM client for OpenAI GPT-4 and Anthropic Claude
+    - Implement interpret_with_llm to generate hypotheses
+    - Add timeout (30s) and retry logic (3 attempts)
+    - Implement response caching for identical queries
+    - Track LLM API costs per organization
+    - _Requirements: 25.9_
+  - [x] 14.4 Create pathway analysis API endpoints
+    - POST /v1/pathway/cross-dataset (initiate cross-dataset analysis)
+    - GET /v1/pathway/analyses/{id} (get analysis results)
+    - POST /v1/pathway/{id}/interpret (request LLM interpretation)
+    - _Requirements: 12.1, 12.4_
+  - [x] 14.5 Write property test for cross-dataset pathway pattern identification
+    - **Property 38: Cross-Dataset Pathway Pattern Identification**
+    - **Validates: Requirements 25.6, 25.7, 25.10**
+  - [x] 14.6 Write property test for LLM pathway interpretation
+    - **Property 39: LLM Pathway Interpretation**
+    - **Validates: Requirements 25.9**
+
+- [x] 15. Export and reproducibility
+  - [x] 15.1 Implement h5ad export with complete data
+    - Create export function to generate h5ad from run
+    - Include all annotations, embeddings, and metadata
+    - Verify completeness with round-trip loading
+    - _Requirements: 9.1_
+  - [x] 15.2 Implement CSV export for analysis results
+    - Export differential expression results as CSV
+    - Export embeddings with cell metadata as CSV
+    - Include column headers and data types
+    - _Requirements: 9.2, 9.3_
+  - [x] 15.3 Implement reproducibility report generation
+    - Create HTML report with pipeline parameters
+    - Include software versions (scanpy, scvi-tools, CellTypist)
+    - Include random seeds used in stochastic methods
+    - Include KnowledgePack versions
+    - Add provenance information for all steps
+    - _Requirements: 9.4, 9.5, 27.1, 27.2, 27.3, 27.4_
+  - [x] 15.4 Create export API endpoints
+    - POST /v1/runs/{id}/export (initiate export)
+    - GET /v1/exports/{id} (get export status)
+    - GET /v1/exports/{id}/download (download export)
+    - _Requirements: 12.1, 12.4_
+  - [x] 15.5 Write property test for export completeness
+    - **Property 19: Export Completeness**
+    - **Validates: Requirements 9.1**
+  - [x] 15.6 Write property test for reproducibility report completeness
+    - **Property 20: Reproducibility Report Completeness**
+    - **Validates: Requirements 9.4, 9.5, 27.4**
+  - [x] 15.7 Write property test for random seed recording and reproducibility
+    - **Property 42: Random Seed Recording and Reproducibility**
+    - **Validates: Requirements 27.2, 27.5**
+
+- [x] 16. Observability and monitoring
+  - [x] 16.1 Set up OpenTelemetry instrumentation
+    - Configure OpenTelemetry SDK in Control Plane API
+    - Configure OpenTelemetry SDK in Compute Plane methods
+    - Set up trace context propagation across services
+    - Configure exporters for Jaeger (traces), Prometheus (metrics), CloudWatch (logs)
+    - _Requirements: 10.1, 10.2_
+  - [x] 16.2 Implement distributed tracing
+    - Add tracing to all API endpoints with operation names
+    - Add tracing to all MethodDefinition executions
+    - Include span attributes (user_id, org_id, run_id, method_name)
+    - _Requirements: 10.1, 10.2_
+  - [x] 16.3 Implement metrics collection
+    - Emit metrics for run duration (histogram)
+    - Emit metrics for artifact size (histogram)
+    - Emit metrics for API latency (histogram)
+    - Emit metrics for error rates (counter)
+    - _Requirements: 10.3_
+  - [x] 16.4 Set up structured logging
+    - Configure JSON logging format for all services
+    - Include context fields (user_id, org_id, run_id, request_id)
+    - Log all errors with stack traces
+    - _Requirements: 10.4_
+  - [x] 16.5 Deploy observability stack
+    - Deploy Jaeger for distributed tracing (ECS Fargate)
+    - Deploy Prometheus for metrics collection (ECS Fargate)
+    - Deploy Grafana for dashboards (ECS Fargate)
+    - Create dashboards for API latency, run duration, error rates
+    - _Requirements: 10.5_
+  - [x] 16.6 Write property test for OpenTelemetry trace emission
+    - **Property 21: OpenTelemetry Trace Emission**
+    - **Validates: Requirements 10.1, 10.2**
+
+- [x] 17. Multi-tenancy and resource quotas
+  - [x] 17.1 Implement organization-scoped query filters
+    - Create SQLAlchemy query mixin for organization scoping
+    - Apply organization filter to all resource queries
+    - Add organization membership verification middleware
+    - _Requirements: 11.1, 11.5_
+  - [x] 17.2 Implement storage quota enforcement
+    - Track total artifact size per organization
+    - Check quota before allowing new uploads
+    - Return quota_exceeded error when limit reached
+    - _Requirements: 11.3_
+  - [x] 17.3 Implement compute quota enforcement
+    - Track concurrent running jobs per organization
+    - Queue or reject new runs when quota reached
+    - _Requirements: 11.4_
+  - [x] 17.4 Add quota monitoring and alerts
+    - Emit metrics for quota usage (storage, compute)
+    - Create alerts for organizations approaching quotas
+    - _Requirements: 11.3, 11.4_
+  - [x] 17.5 Write property test for storage quota enforcement
+    - **Property 22: Storage Quota Enforcement**
+    - **Validates: Requirements 11.3**
+  - [x] 17.6 Write property test for compute quota enforcement
+    - **Property 23: Compute Quota Enforcement**
+    - **Validates: Requirements 11.4**
+
+- [x] 18. API rate limiting and error handling
+  - [x] 18.1 Implement rate limiting middleware
+    - Create token bucket rate limiter per user
+    - Configure limits (e.g., 100 requests per minute)
+    - Return HTTP 429 with Retry-After header when exceeded
+    - Exempt admin users from rate limits
+    - Store rate limit state in Redis
+    - _Requirements: 29.1, 29.2, 29.3, 29.4_
+  - [x] 18.2 Implement error classification
+    - Create error type enum (user_error, system_error, transient_error)
+    - Classify all exceptions into error types
+    - Configure retry behavior based on error type
+    - _Requirements: 16.3, 16.5_
+  - [x] 18.3 Implement error response formatting
+    - Create ErrorResponse model with error_type, error_code, message, details
+    - Include request_id for tracing
+    - Return HTTP 422 for validation errors with field details
+    - _Requirements: 12.4, 16.1, 16.2_
+  - [x] 18.4 Add error monitoring and alerting
+    - Log all system errors with context
+    - Create alerts for high error rates
+    - Track error metrics by type and endpoint
+    - _Requirements: 10.4_
+  - [x] 18.5 Write property test for rate limit enforcement
+    - **Property 43: Rate Limit Enforcement**
+    - **Validates: Requirements 29.1, 29.2**
+  - [x] 18.6 Write property test for admin rate limit exemption
+    - **Property 44: Admin Rate Limit Exemption**
+    - **Validates: Requirements 29.4**
+  - [x] 18.7 Write property test for request validation with 422 response
+    - **Property 24: Request Validation with 422 Response**
+    - **Validates: Requirements 12.4**
+
+- [x] 19. Caching and performance optimization
+  - [x] 19.1 Implement Redis caching layer
+    - Create cache service with get/set/delete operations
+    - Configure TTL for different data types
+    - Implement cache invalidation on data mutations
+    - _Requirements: 17.3_
+  - [x] 19.2 Add caching to frequently accessed endpoints
+    - Cache dataset summaries with 5-minute TTL
+    - Cache run status with 30-second TTL
+    - Cache user organization memberships with 10-minute TTL
+    - _Requirements: 17.3_
+  - [x] 19.3 Implement API response pagination
+    - Add pagination to all list endpoints
+    - Support configurable page size (default 20, max 100)
+    - Include total count and pagination metadata in responses
+    - _Requirements: 17.4_
+  - [x] 19.4 Optimize database queries
+    - Add indexes for common query patterns
+    - Use select_related/joinedload for foreign keys
+    - Implement query result caching
+    - _Requirements: 17.1, 17.2_
+  - [x] 19.5 Write property test for metadata caching
+    - **Property 29: Metadata Caching**
+    - **Validates: Requirements 17.3**
+  - [x] 19.6 Write property test for API response pagination
+    - **Property 30: API Response Pagination**
+    - **Validates: Requirements 17.4**
+
+- [x] 20. Audit logging and compliance
+  - [x] 20.1 Implement AuditEvent creation
+    - Create audit_log function to record events
+    - Capture timestamp, user_id, action_type, resource_id
+    - Capture before/after state for mutations
+    - Store events in immutable audit_events table
+    - _Requirements: 15.1, 15.2, 15.3, 15.4_
+  - [x] 20.2 Add audit logging to all mutations
+    - Log dataset creation, updates, deletions
+    - Log run creation, cancellation, completion
+    - Log annotation creation, edits, approvals
+    - Log authentication attempts
+    - _Requirements: 15.1, 15.2, 15.3_
+  - [x] 20.3 Implement audit event query API
+    - GET /v1/audit-events (list events with filtering)
+    - Filter by user, resource type, date range
+    - Support pagination for large result sets
+    - _Requirements: 15.4_
+  - [x] 20.4 Write property test for audit event completeness
+    - **Property 27: Audit Event Completeness**
+    - **Validates: Requirements 15.4**
+
+- [x] 21. TypeScript SDK generation
+  - [x] 21.1 Generate OpenAPI specification from FastAPI
+    - Configure FastAPI to auto-generate OpenAPI spec
+    - Add endpoint descriptions and examples
+    - Version API with /v1 prefix
+    - _Requirements: 12.2, 12.5_
+  - [x] 21.2 Generate TypeScript SDK from OpenAPI
+    - Use openapi-typescript-codegen or similar tool
+    - Generate TypeScript types for all request/response models
+    - Generate API client with typed methods
+    - Publish SDK to packages/sdk
+    - _Requirements: 12.3_
+  - [x] 21.3 Add SDK documentation and examples
+    - Document SDK installation and usage
+    - Provide code examples for common operations
+    - Include authentication setup
+    - _Requirements: 20.3_
+
+- [x] 22. Checkpoint - Backend services complete
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 23. Frontend - Next.js application setup
+  - [x] 23.1 Initialize Next.js 14 project with App Router
+    - Create Next.js app in apps/web
+    - Configure TypeScript with strict mode
+    - Set up Tailwind CSS with custom theme
+    - Configure app/ directory structure
+    - _Requirements: 28.1, 28.2_
+  - [x] 23.2 Set up SDK client and API integration
+    - Import TypeScript SDK from packages/sdk
+    - Create API client wrapper with authentication
+    - Implement token storage and refresh logic
+    - Add error handling for API calls
+    - _Requirements: 12.3_
+  - [x] 23.3 Implement authentication UI
+    - Create login page with email/password form
+    - Implement token storage in cookies
+    - Add authentication middleware for protected routes
+    - Create logout functionality
+    - _Requirements: 1.1_
+  - [x] 23.4 Create layout and navigation
+    - Implement root layout with navigation bar
+    - Add organization selector
+    - Create sidebar with main navigation links
+    - Add user profile menu
+    - _Requirements: 28.1_
+
+- [x] 24. Frontend - Dataset management UI
+  - [x] 24.1 Create dataset list page
+    - Display datasets in table with name, cell count, gene count, created date
+    - Add pagination controls
+    - Add filtering by name and metadata
+    - Add sorting by columns
+    - _Requirements: 8.1_
+  - [x] 24.2 Create dataset upload page
+    - Implement file upload with drag-and-drop
+    - Support multiple file formats (h5ad, 10x, csv, tsv)
+    - Show upload progress
+    - Display validation errors
+    - Add metadata input fields
+    - _Requirements: 2.1, 2.2_
+  - [x] 24.3 Create dataset detail page
+    - Display dataset metadata and statistics
+    - Show all versions with file information
+    - List all runs for the dataset
+    - Add "Create Run" button
+    - _Requirements: 8.1_
+  - [x] 24.4 Write component tests for dataset UI
+    - Test dataset list rendering
+    - Test file upload interactions
+    - Test validation error display
+    - _Requirements: 28.2, 28.5_
+
+- [x] 25. Frontend - Run creation and monitoring UI
+  - [x] 25.1 Create run creation page
+    - Display available pipeline templates
+    - Show parameter form based on template schema
+    - Validate parameters before submission
+    - Submit run creation request
+    - _Requirements: 4.1_
+  - [x] 25.2 Create run list page
+    - Display runs with status, start time, duration
+    - Add filtering by status and date range
+    - Show progress indicators for running jobs
+    - Add real-time status updates via WebSocket
+    - _Requirements: 7.1, 7.2_
+  - [x] 25.3 Create run detail page
+    - Display run metadata and parameters
+    - Show status timeline with method progress
+    - Display error messages for failed runs
+    - List artifacts with download links
+    - Add "Cancel Run" button for running jobs
+    - _Requirements: 7.2, 7.3, 16.2_
+  - [x] 25.4 Implement WebSocket for real-time updates
+    - Connect to WebSocket endpoint for run status
+    - Update UI when run status changes
+    - Show progress events from Compute Plane
+    - _Requirements: 4.17_
+  - [x] 25.5 Write component tests for run UI
+    - Test run creation form validation
+    - Test run list rendering with different statuses
+    - Test real-time status updates
+    - _Requirements: 28.2, 28.5_
+
+- [x] 26. Frontend - Embedding visualization
+  - [x] 26.1 Implement WebGL embedding renderer
+    - Create EmbeddingRenderer class using deck.gl
+    - Implement tile-based rendering for large embeddings (>100k cells)
+    - Add level-of-detail (LOD) support for zooming
+    - Implement color mapping by metadata and gene expression
+    - _Requirements: 8.2, 8.4_
+  - [x] 26.2 Create embedding viewer component
+    - Display 2D embeddings with WebGL renderer
+    - Add zoom and pan controls
+    - Implement lasso selection tool
+    - Show selected cell metadata in sidebar
+    - Add color-by selector (cluster, cell_type, gene expression)
+    - _Requirements: 8.2, 8.3, 8.4_
+  - [x] 26.3 Implement embedding comparison view
+    - Display side-by-side embeddings from multiple runs
+    - Synchronize zoom and pan across views
+    - Support batch correction before/after comparison
+    - _Requirements: 8.6, 23.3_
+  - [x] 26.4 Write component tests for embedding viewer
+    - Test rendering with different dataset sizes
+    - Test color mapping updates
+    - Test selection interactions
+    - _Requirements: 28.2, 28.5_
+
+- [x] 27. Frontend - Annotation workbench
+  - [x] 27.1 Create annotation viewer
+    - Display cell type annotations on embedding
+    - Show hierarchical labels (tissue → lineage → cell_type)
+    - Display confidence scores per cell
+    - Color cells by annotation level
+    - _Requirements: 5.3, 8.2_
+  - [x] 27.2 Implement annotation editing
+    - Allow manual cell selection and re-annotation
+    - Support hierarchical label selection
+    - Create new revision on save
+    - Show revision history
+    - _Requirements: 5.5_
+  - [x] 27.3 Create annotation approval workflow UI
+    - Display pending annotations for review
+    - Show annotation changes from previous revision
+    - Add approve/reject buttons
+    - Track approval status
+    - _Requirements: 5.6_
+  - [x] 27.4 Write component tests for annotation workbench
+    - Test annotation display
+    - Test manual editing interactions
+    - Test approval workflow
+    - _Requirements: 28.2, 28.5_
+
+- [x] 28. Frontend - Analysis results and export
+  - [x] 28.1 Create cluster statistics page
+    - Display cluster-level statistics (cell count, percentage)
+    - Show top marker genes per cluster
+    - Display pathway scores per cluster
+    - Add visualization of cluster composition
+    - _Requirements: 8.5, 24.2_
+  - [x] 28.2 Create differential expression viewer
+    - Display DE results in sortable table
+    - Show log fold change, p-values, adjusted p-values
+    - Add volcano plot visualization
+    - Support filtering by significance thresholds
+    - _Requirements: 24.1, 24.2_
+  - [x] 28.3 Create pathway analysis viewer
+    - Display pathway scores on embedding
+    - Show pathway enrichment results
+    - Visualize cross-dataset pathway patterns
+    - Display LLM interpretations and hypotheses
+    - _Requirements: 25.5, 25.9_
+  - [x] 28.4 Create ligand-receptor interaction viewer
+    - Display interaction network with cluster nodes
+    - Show weighted edges for interaction scores
+    - Add filtering by significance
+    - Support interactive exploration
+    - _Requirements: 26.5_
+  - [x] 28.5 Create export center
+    - Display available export formats (h5ad, CSV, HTML report)
+    - Show export status and progress
+    - Provide download links for completed exports
+    - Include reproducibility report preview
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+  - [x] 28.6 Write component tests for analysis UI
+    - Test DE results rendering
+    - Test pathway visualization
+    - Test export functionality
+    - _Requirements: 28.2, 28.5_
+
+- [x] 29. Checkpoint - Frontend complete
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 30. AWS infrastructure setup
+  - [x] 30.1 Set up VPC and networking
+    - Create VPC with public, private, and isolated subnets
+    - Configure NAT gateway for private subnet internet access
+    - Set up security groups for each service
+    - Configure VPC endpoints for S3 and other AWS services
+    - _Requirements: 14.1_
+  - [x] 30.2 Set up RDS PostgreSQL
+    - Create db.r6g.xlarge instance with Multi-AZ
+    - Configure automated backups with 7-day retention
+    - Create read replicas for read scaling
+    - Set up security group to allow access from ECS tasks
+    - _Requirements: 14.1_
+  - [x] 30.3 Set up ElastiCache Redis
+    - Create cache.r6g.large cluster with cluster mode
+    - Configure security group for ECS task access
+    - Enable encryption at rest and in transit
+    - _Requirements: 14.1_
+  - [x] 30.4 Set up S3 buckets
+    - Create zerna-datasets-{env} and zerna-artifacts-{env} buckets
+    - Enable versioning for datasets bucket
+    - Configure lifecycle policies (archive to Glacier after 90 days)
+    - Enable SSE-S3 encryption
+    - _Requirements: 2.5, 11.2_
+  - [x] 30.5 Set up ECS cluster
+    - Create ECS cluster for Fargate tasks
+    - Configure CloudWatch Logs for container logging
+    - Set up task execution role with ECR and Secrets Manager permissions
+    - _Requirements: 14.1_
+
+- [x] 31. Container images and deployment
+  - [x] 31.1 Create Docker images for all services
+    - Create Dockerfile for Control Plane API (FastAPI)
+    - Create Dockerfile for Web App (Next.js)
+    - Create Dockerfile for Temporal worker
+    - Create Dockerfile for Nextflow orchestrator
+    - Create Dockerfiles for each scientific method
+    - Push images to ECR
+    - _Requirements: 14.1_
+  - [x] 31.2 Create ECS task definitions
+    - Define task for Web App (1 vCPU, 2GB RAM)
+    - Define task for Control Plane API (2 vCPU, 4GB RAM)
+    - Define task for Temporal server (2 vCPU, 4GB RAM)
+    - Define task for Temporal worker (2 vCPU, 4GB RAM)
+    - Configure environment variables and secrets
+    - _Requirements: 14.1_
+  - [x] 31.3 Set up AWS Batch for compute workers
+    - Create compute environments for CPU and GPU workers
+    - Configure job queues with priority
+    - Define job definitions for each method
+    - Set up spot instance configuration (70% spot, 30% on-demand)
+    - Configure auto-scaling (0-50 instances per org)
+    - _Requirements: 30.9_
+  - [x] 31.4 Set up Application Load Balancer
+    - Create ALB with HTTPS listener
+    - Configure target groups for Web App and API
+    - Set up health checks
+    - Configure SSL certificate
+    - _Requirements: 14.1_
+  - [x] 31.5 Deploy ECS services
+    - Deploy Web App service with auto-scaling (2-10 tasks)
+    - Deploy Control Plane API service with auto-scaling (4-20 tasks)
+    - Deploy Temporal server service (3 tasks for HA)
+    - Deploy Temporal worker service
+    - _Requirements: 14.1_
+
+- [x] 32. CI/CD pipeline
+  - [x] 32.1 Create GitHub Actions workflow for testing
+    - Run unit tests on every PR
+    - Run property tests with 100 iterations
+    - Check code coverage (80% minimum)
+    - Run linting (ruff, ESLint)
+    - _Requirements: 19.5_
+  - [x] 32.2 Create GitHub Actions workflow for building
+    - Build Docker images for all services
+    - Tag images with commit SHA and branch name
+    - Push images to ECR
+    - _Requirements: 14.1_
+  - [x] 32.3 Create GitHub Actions workflow for deployment
+    - Deploy to staging on push to staging branch
+    - Deploy to production on push to main branch
+    - Update ECS services with new task definitions
+    - Run smoke tests after deployment
+    - _Requirements: 14.1_
+  - [x] 32.4 Set up deployment rollback mechanism
+    - Store previous task definition versions
+    - Create rollback script for quick reversion
+    - Add manual approval for production deployments
+    - _Requirements: 20.5_
+
+- [x] 33. Integration testing
+  - [x] 33.1 Set up integration test environment
+    - Create docker-compose for integration tests
+    - Include all services (API, Temporal, PostgreSQL, Redis, S3)
+    - Use test data (small synthetic datasets with 1000 cells)
+    - _Requirements: 19.2_
+  - [x] 33.2 Write end-to-end workflow tests
+    - Test upload → ingest → run → explore workflow
+    - Test run → annotate → approve → export workflow
+    - Test multiple runs → cross-dataset analysis → LLM interpretation workflow
+    - Test dataset upload → recommendation → accept → run workflow
+    - _Requirements: 19.3_
+  - [x] 33.3 Write API integration tests
+    - Test all API endpoints with valid and invalid inputs
+    - Test authentication and authorization
+    - Test multi-tenancy isolation
+    - Test error handling and error responses
+    - _Requirements: 19.2_
+  - [x] 33.4 Run integration tests in CI
+    - Add integration test job to GitHub Actions
+    - Run on every PR and before deployment
+    - _Requirements: 19.5_
+
+- [x] 34. Performance testing and optimization
+  - [x] 34.1 Create performance test suite
+    - Test API latency (p50 < 100ms, p99 < 500ms)
+    - Test dataset upload (1GB in < 60s)
+    - Test run execution (100k cells in < 10 minutes)
+    - Test embedding rendering (1M cells at 60fps)
+    - _Requirements: 17.1, 17.2_
+  - [x] 34.2 Run load tests
+    - Simulate 100 concurrent users per organization
+    - Test with 1M cell datasets
+    - Test 10 concurrent runs per organization
+    - Identify bottlenecks and optimize
+    - _Requirements: 17.1, 17.2_
+  - [x] 34.3 Optimize database queries
+    - Add missing indexes based on query patterns
+    - Optimize N+1 queries with eager loading
+    - Add query result caching for expensive queries
+    - _Requirements: 17.3_
+  - [x] 34.4 Optimize frontend performance
+    - Implement code splitting for large components
+    - Add lazy loading for embedding viewer
+    - Optimize WebGL rendering for large datasets
+    - Add service worker for offline support
+    - _Requirements: 17.1, 28.4_
+
+- [x] 35. Documentation
+  - [x] 35.1 Write README with setup instructions
+    - Document prerequisites (Docker, pnpm, uv)
+    - Provide step-by-step local development setup
+    - Include troubleshooting section
+    - _Requirements: 20.1_
+  - [x] 35.2 Create architecture documentation
+    - Document Control Plane architecture with diagrams
+    - Document Compute Plane architecture with diagrams
+    - Document data flow and service interactions
+    - Document deployment architecture
+    - _Requirements: 20.2_
+  - [x] 35.3 Generate API documentation
+    - Generate OpenAPI documentation from FastAPI
+    - Host API docs at /docs endpoint
+    - Include request/response examples
+    - Document authentication flow
+    - _Requirements: 20.3_
+  - [x] 35.4 Write method documentation
+    - Document each MethodDefinition with input/output schemas
+    - Include scientific background and references
+    - Document parameter recommendations
+    - _Requirements: 20.4_
+  - [x] 35.5 Create operational runbooks
+    - Document deployment procedures
+    - Document rollback procedures
+    - Document debugging common issues
+    - Document monitoring and alerting
+    - _Requirements: 20.5_
+
+- [x] 36. Security hardening
+  - [x] 36.1 Implement encryption at rest
+    - Enable RDS encryption with AES-256
+    - Enable S3 SSE-S3 encryption for all buckets
+    - Enable Redis encryption for ElastiCache
+    - _Requirements: 14.1_
+  - [x] 36.2 Implement encryption in transit
+    - Configure TLS for all API endpoints
+    - Configure TLS for database connections
+    - Configure TLS for Redis connections
+    - _Requirements: 14.1_
+  - [x] 36.3 Set up secrets management
+    - Store database credentials in AWS Secrets Manager
+    - Store API keys in AWS Secrets Manager
+    - Configure automatic secret rotation (90 days)
+    - _Requirements: 14.4, 14.5_
+  - [x] 36.4 Implement security scanning
+    - Add dependency vulnerability scanning (Snyk, Dependabot)
+    - Add container image scanning
+    - Add SAST scanning for code
+    - Run security scans in CI
+    - _Requirements: 19.5_
+  - [x] 36.5 Configure WAF and DDoS protection
+    - Set up AWS WAF for ALB
+    - Configure rate limiting rules
+    - Enable AWS Shield for DDoS protection
+    - _Requirements: 29.1_
+
+- [x] 37. Final checkpoint and production readiness
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 38. Production deployment and monitoring
+  - [x] 38.1 Deploy to production environment
+    - Run final integration tests in staging
+    - Deploy all services to production
+    - Verify all health checks pass
+    - Run smoke tests in production
+    - _Requirements: 14.1_
+  - [x] 38.2 Set up monitoring dashboards
+    - Create Grafana dashboard for API metrics
+    - Create dashboard for run execution metrics
+    - Create dashboard for infrastructure metrics
+    - Set up alerts for critical metrics
+    - _Requirements: 10.3, 10.5_
+  - [x] 38.3 Configure log aggregation
+    - Set up CloudWatch Logs for all services
+    - Configure log retention policies
+    - Set up log-based alerts for errors
+    - _Requirements: 10.4_
+  - [x] 38.4 Perform user acceptance testing
+    - Test all user workflows with real users
+    - Collect feedback and fix critical issues
+    - Verify performance meets requirements
+    - _Requirements: 19.3_
+  - [x] 38.5 Create initial knowledge packs
+    - Upload cell type marker databases
+    - Upload pathway databases (MSigDB, GO, KEGG)
+    - Upload ligand-receptor pair databases
+    - _Requirements: 6.1, 6.2_
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for faster MVP delivery
+- Each task references specific requirements for traceability
+- Checkpoints (tasks 22, 29, 37) ensure incremental validation before proceeding
+- Property tests validate universal correctness properties from the design document
+- Unit tests validate specific examples and edge cases
+- Integration tests validate end-to-end workflows
+- The implementation follows a bottom-up approach: infrastructure → backend services → compute plane → frontend → deployment
+- All services use Python 3.11+ for backend and TypeScript for frontend
+- Heterogeneous GPU support (CUDA, ROCm, Metal, OpenCL, TPU) is built into the compute abstraction layer
+- Cross-dataset pathway analysis and LLM integration are implemented as post-pipeline workflows
+- Multi-tenancy and observability are built in from day one, not added later

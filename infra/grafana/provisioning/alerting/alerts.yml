@@ -1,0 +1,175 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Zerna Critical Alerts
+    folder: Zerna
+    interval: 1m
+    rules:
+      - uid: zerna-api-error-rate
+        title: API Error Rate > 5%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: sum(rate(zerna_api_errors_total[5m]))
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: sum(rate(zerna_api_latency_seconds_count[5m]))
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: math
+              expression: $A / $B > 0.05
+              refId: C
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: API error rate exceeds 5%
+          description: >
+            The API error rate has been above 5% for the last 5 minutes.
+            Current rate: {{ $values.C }}.
+
+      - uid: zerna-api-latency-p99
+        title: API p99 Latency > 2s
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: histogram_quantile(0.99, sum(rate(zerna_api_latency_seconds_bucket[5m])) by (le))
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [2]
+              refId: B
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: API p99 latency exceeds 2 seconds
+          description: >
+            The API p99 latency has been above 2s for the last 5 minutes.
+            Current value: {{ $values.A }}s.
+
+      - uid: zerna-run-failure-rate
+        title: Run Failure Rate > 10%
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: sum(rate(zerna_runs_failed_total[10m]))
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: sum(rate(zerna_runs_completed_total[10m])) + sum(rate(zerna_runs_failed_total[10m]))
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: math
+              expression: $A / $B > 0.10
+              refId: C
+        for: 10m
+        labels:
+          severity: critical
+          team: compute
+        annotations:
+          summary: Run failure rate exceeds 10%
+          description: >
+            The pipeline run failure rate has been above 10% for the last
+            10 minutes. Current rate: {{ $values.C }}.
+
+      - uid: zerna-db-pool-high
+        title: Database Connection Pool > 80%
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: zerna_db_pool_active / zerna_db_pool_size
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0.8]
+              refId: B
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: Database connection pool utilization above 80%
+          description: >
+            The database connection pool has been above 80% utilization
+            for the last 5 minutes. Current: {{ $values.A }}.
+
+      - uid: zerna-storage-quota-high
+        title: Storage Quota > 90%
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: zerna_storage_used_bytes / zerna_storage_quota_bytes
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0.9]
+              refId: B
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: Organization storage quota above 90%
+          description: >
+            An organization's storage usage has exceeded 90% of its quota
+            for the last 5 minutes. Current: {{ $values.A }}.

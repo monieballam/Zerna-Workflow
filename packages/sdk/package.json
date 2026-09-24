@@ -1,0 +1,50 @@
+{
+  "name": "@zerna/sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for the Zerna Control Plane API — generated from OpenAPI specifications",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "generate": "openapi-typescript ../../openapi.json -o src/generated/schema.ts",
+    "generate:fetch": "node scripts/generate-client.mjs",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist src/generated"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "openapi-typescript": "^7.4.4",
+    "openapi-fetch": "^0.13.5",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "openapi-fetch": "^0.13.5"
+  },
+  "peerDependenciesMeta": {
+    "openapi-fetch": {
+      "optional": false
+    }
+  },
+  "keywords": [
+    "zerna",
+    "single-cell",
+    "genomics",
+    "sdk",
+    "typescript",
+    "openapi"
+  ],
+  "license": "MIT"
+}

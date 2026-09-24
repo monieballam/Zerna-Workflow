@@ -1,0 +1,115 @@
+# ============================================================
+# Universal States Marker Pack
+# Pan-cancer cell state markers (cycling, IFN response, hypoxia, stress)
+# ============================================================
+
+# States are not lineages but cell states/programs
+States:
+  # Cell cycle / proliferation
+  Cycling:
+    genes:
+      - MKI67
+      - TOP2A
+      - PCNA
+      - BIRC5 # Survivin
+      - CCNB1
+      - CCNB2
+      - CDK1
+      - UBE2C
+      - CENPF
+      - AURKB
+      - PLK1
+      - CCNA2
+      - STMN1
+
+  # Type I interferon response
+  IFN_Alpha_Response:
+    genes:
+      - IFNA1
+      - IFNA2
+      - IRF7
+      - STAT1
+      - STAT2
+      - MX1
+      - MX2
+      - OAS1
+      - OAS2
+      - OAS3
+      - ISG15
+      - IFIT1
+      - IFIT2
+      - IFIT3
+
+  # Type II interferon response
+  IFN_Gamma_Response:
+    genes:
+      - IFNG
+      - IRF1
+      - STAT1
+      - GBP1
+      - GBP2
+      - GBP3
+      - GBP4
+      - GBP5
+      - CXCL9
+      - CXCL10
+      - CXCL11
+      - IDO1
+      - NOS2
+
+  # Hypoxia response
+  Hypoxia:
+    genes:
+      - HIF1A
+      - HIF3A
+      - EPAS1 # HIF2A
+      - VEGFA
+      - VEGFB
+      - VEGFC
+      - LDHA
+      - PDK1
+      - PDK3
+      - SLC2A1 # GLUT1
+      - CA9
+      - BNIP3
+      - BNIP3L
+      - ADM
+
+  # Heat shock / stress response
+  Heat_Shock_Stress:
+    genes:
+      - HSP90AA1
+      - HSP90AB1
+      - HSPA1A # HSP70
+      - HSPA1B
+      - HSPB1 # HSP27
+      - DNAJB1
+      - DNAJB4
+      - HSF1
+      - HSF2
+
+  # ER stress / UPR
+  ER_Stress:
+    genes:
+      - XBP1
+      - ATF4
+      - ATF6
+      - DDIT3 # CHOP
+      - ERN1 # IRE1
+      - EIF2AK3 # PERK
+      - DNAJB9
+      - DNAJC3
+
+  # Apoptosis
+  Apoptosis:
+    genes:
+      - BAX
+      - BAK1
+      - BAX
+      - BCL2
+      - BCL2L1 # BCL-XL
+      - CASP3
+      - CASP7
+      - CASP8
+      - CASP9
+      - PARP1

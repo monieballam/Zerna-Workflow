@@ -1,0 +1,258 @@
+# ============================================================
+# Myeloid HGM subtypes (Dashboard V4.01 / annotation_from_rds)
+# Level1=Immune, Level2=Immune_Myeloid, Level3=Monocyte_*/Macrophage_*/DC_*
+# Load on demand (not in UNIVERSAL_PACKS) for deterministic myeloid layer and agent accuracy.
+# ============================================================
+
+Subtypes:
+  Immune:
+    Classical_Mono:
+      genes:
+        - S100A12
+        - NFE2
+        - S1PR3
+        - PADI4
+        - CDA
+        - FOLR3
+        - RBP7
+        - FCN1
+        - F5
+        - SELL
+        - VCAN
+        - MPP7
+        - S100A8
+        - VNN2
+        - LILRA5
+        - MARC1
+        - NRGN
+        - VSTM1
+        - CFP
+        - NLRP12
+    Intermediate_Mono:
+      genes:
+        - CCR2
+        - MCEMP1
+        - NKRF
+        - TNFSF14
+        - RNASE2
+        - IL10
+        - LRG1
+        - CST6
+        - ASGR2
+        - RETN
+        - DNAJA4
+        - BAG3
+        - LYPD3
+        - SNAI1
+        - HSPA1L
+        - CEACAM4
+    Non_classical_Mono:
+      genes:
+        - LYPD2
+        - CD79B
+        - SH2D1B
+        - PTP4A3
+        - LILRA1
+        - PGLYRP2
+        - CCDC88C
+        - PLAGL2
+        - TNFRSF8
+        - GPBAR1
+        - SH2D3C
+        - NEURL1
+        - SCGB3A1
+        - SYTL1
+    Inflammatory_Mono:
+      genes:
+        - SERPINB2
+        - TNFAIP6
+        - LIPN
+        - HAS1
+        - IL1A
+        - EREG
+        - PTX3
+        - CCL20
+        - CXCL1
+        - FCAR
+        - LAMB3
+        - PLCB1
+    C1QC_Macro:
+      genes:
+        - FCGBP
+        - MCF2L
+        - ADGRG1
+        - PLXDC1
+        - OLFML3
+        - MTUS1
+        - P2RY12
+        - IGSF21
+        - SIGLEC8
+        - CLEC9A
+        - GPR34
+        - DEPTOR
+    IL1B_Macro:
+      genes:
+        - CH25H
+        - CCL8
+        - NPHS1
+        - EYA2
+        - TTC28
+        - NAALADL2
+        - EDA
+        - RBMS3
+    LA_Macro:
+      genes:
+        - CHIT1
+        - ACE
+        - HS3ST2
+        - CCL18
+        - DNASE2B
+        - RARRES1
+        - NUPR1
+        - CTSK
+        - LPL
+        - PLPP3
+        - ENO2
+        - GAPLINC
+        - ATP6V0D2
+        - FABP3
+    KYNU_Macro:
+      genes:
+        - SOX5
+        - SDK1
+        - CALML5
+        - GK-AS1
+    Proliferating_Macro:
+      genes:
+        - MKI67
+        - GTSE1
+        - PCLAF
+        - TOP2A
+        - AURKB
+        - TYMS
+        - UBE2C
+        - TPX2
+        - HIST1H3B
+        - BIRC5
+        - DLGAP5
+        - CDC20
+        - MPO
+        - HMMR
+        - TK1
+        - ASPM
+        - CENPF
+        - CEP55
+        - CCNA2
+        - HIST1H1B
+    MT_Macro:
+      genes:
+        - MT1A
+        - MT1B
+        - MT1M
+        - MT1H
+        - MT1G
+        - MT1E
+        - MT1F
+        - MT1X
+        - SLC7A11
+        - CHI3L1
+        - TM4SF19
+        - ATP6V0D2
+        - RAI14
+        - MSC
+        - PLPP3
+        - SRXN1
+        - GCLM
+        - OSGIN1
+        - AK4
+    # cDC1: core anchors + must-not gate (exclude monocytes/macrophages); BATF3/IRF8 strengthen when present
+    cDC1:
+      core_genes:
+        - XCR1
+        - CLEC9A
+        - BATF3
+        - IRF8
+      support_genes:
+        - CLNK
+        - BTLA
+        - DNASE1L3
+        - DBN1
+        - GCSAM
+        - NEGR1
+        - RHEX
+        - IDO1
+        - CLCN4
+        - PAWR
+        - ITGAX
+      not_genes:
+        - LST1
+        - C1QA
+        - C1QB
+        - C1QC
+        - S100A8
+        - S100A9
+        - TYROBP
+      genes:
+        - XCR1
+        - CLEC9A
+        - BATF3
+        - IRF8
+        - CLNK
+        - BTLA
+        - DNASE1L3
+        - DBN1
+        - GCSAM
+        - NEGR1
+        - RHEX
+        - IDO1
+        - CLCN4
+        - PAWR
+        - ITGAX
+    # cDC2: antigen-presenting DC; exclude T/NK confusers (LTB/GZMB removed); not_genes block mono/macro
+    cDC2:
+      genes:
+        - CD207
+        - CD1C
+        - CD1E
+        - CDH17
+        - FCER1A
+        - ENHO
+        - PARM1
+        - CLEC4F
+        - P2RY14
+        - CCR6
+        - P2RY10
+        - CLEC10A
+      support_genes:
+        - HLA-DRA
+        - HLA-DRB1
+        - HLA-DPA1
+        - HLA-DPB1
+        - CD74
+        - ITGAX
+        - ZBTB46
+        - FLT3
+      not_genes:
+        - S100A8
+        - S100A9
+        - FCN1
+        - LST1
+        - C1QA
+        - C1QB
+        - C1QC
+        - TYROBP
+    cDC3:
+      genes:
+        - LAD1
+        - CCL22
+        - CCR7
+        - LAMP3
+        - SLCO5A1
+        - CCL19
+        - IDO1
+        - RAMP1
+        - CD200
+        - EBF1
+        - AOC1
+        - SOX5
+        - DSG2

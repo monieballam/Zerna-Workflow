@@ -1,0 +1,164 @@
+# ============================================================
+# Universal Stromal Marker Pack
+# Pan-cancer stromal cell type markers (fibroblast, myofibroblast, pericyte, smooth muscle, osteoblast-like)
+# ============================================================
+
+Lineage:
+  # Broad stromal lineage marker
+  Stromal:
+    include:
+      - COL1A1
+      - COL1A2
+      - DCN
+      - LUM
+      - VIM
+    exclude:
+      - PTPRC
+      - EPCAM
+      - KRT8
+      - KRT18
+      - PECAM1
+      - VWF
+
+Subtypes:
+  Stromal:
+    # Fibroblasts (general)
+    Fibroblast:
+      genes:
+        - COL1A1
+        - COL1A2
+        - COL3A1
+        - DCN
+        - LUM
+        - DPT
+        - PDGFRA
+        - FAP
+        - THY1
+        - VIM
+
+    # Myofibroblasts / myCAF
+    Myofibroblast:
+      genes:
+        - ACTA2
+        - TAGLN
+        - MYL9
+        - MYLK
+        - MYH11
+        - COL1A1
+        - COL1A2
+        - PDGFRA
+
+    # Cancer-associated fibroblasts (myCAF) — core = fibro-activation/ECM; support = contractile; not_genes = SMC/pericyte to reduce overlap
+    myCAF:
+      core_genes:
+        - CTHRC1
+        - POSTN
+        - COL1A1
+        - COL1A2
+        - COL3A1
+        - FN1
+      support_genes:
+        - ACTA2
+        - TAGLN
+        - PDGFRA
+        - MYL9
+        - CNN1
+      not_genes:
+        - MYH11
+        - MYOCD
+        - RGS5
+        - PDGFRB
+      genes:
+        - CTHRC1
+        - POSTN
+        - COL1A1
+        - COL1A2
+        - COL3A1
+        - FN1
+        - ACTA2
+        - TAGLN
+        - PDGFRA
+        - MYL9
+        - CNN1
+
+    # Inflammatory CAF (iCAF)
+    iCAF:
+      genes:
+        - IL6
+        - CXCL1
+        - CXCL2
+        - CXCL12
+        - PDGFRA
+        - COL1A1
+        - DCN
+        - DPT
+        - LUM
+        - FAP
+
+    # Pericytes
+    Pericyte:
+      genes:
+        - RGS5
+        - PDGFRB
+        - CSPG4 # NG2
+        - MCAM
+        - ABCC9
+        - KCNJ8
+
+    # Smooth muscle cells
+    Smooth_Muscle:
+      genes:
+        - ACTA2
+        - TAGLN
+        - MYH11
+        - CNN1
+        - CALPONIN1
+        - DES
+        - CALDESMON
+
+    # Osteoblast-like cells
+    Osteoblast:
+      genes:
+        - RUNX2
+        - SP7 # Osterix
+        - COL1A1
+        - COL1A2
+        - BGLAP # Osteocalcin
+        - IBSP # Bone sialoprotein
+        - SPP1 # Osteopontin
+
+    # Osteoclasts
+    Osteoclast:
+      genes:
+        - CTSK
+        - ACP5 # TRAP
+        - NFATC1
+        - DCSTAMP
+        - OSCAR
+        - CALCR
+
+    # Antigen-presenting CAF (apCAF): HLA-II + CD74; not_genes avoid immune DC contamination
+    apCAF:
+      core_genes:
+        - HLA-DRA
+        - CD74
+      support_genes:
+        - HLA-DRB1
+        - HLA-DPA1
+        - HLA-DPB1
+        - HLA-DQA1
+        - HLA-DQB1
+      not_genes:
+        - PTPRC
+        - LST1
+        - TYROBP
+        - NKG7
+        - MS4A1
+      genes:
+        - HLA-DRA
+        - HLA-DRB1
+        - HLA-DPA1
+        - HLA-DPB1
+        - HLA-DQA1
+        - HLA-DQB1
+        - CD74

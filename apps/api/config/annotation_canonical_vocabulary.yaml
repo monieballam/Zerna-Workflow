@@ -1,0 +1,112 @@
+# Canonical annotation vocabulary for audit / explorer display checks.
+# Aligns with methods/annotation/zerna_architecture/hierarchy_vocabulary.py (subset + synonyms).
+
+level1_allowlist:
+  - Immune
+  - Stromal
+  - Epithelial
+  - Endothelial
+  - Neural
+  - Other
+  - Unknown
+
+level2_by_level1:
+  Immune:
+    - T cells
+    - B cells
+    - Myeloid
+    - Plasma cells
+    - Mast cells
+    - NK cells
+    - Innate lymphoid
+  Stromal:
+    - Fibroblasts
+    - Pericytes
+    - Smooth muscle
+    - Osteoblast
+    - Osteoclast
+  Epithelial:
+    - Luminal epithelial
+    - Basal epithelial
+    - Intermediate epithelial
+    - Neuroendocrine epithelial
+    - Secretory epithelial
+    - Epithelial_Other
+  Endothelial:
+    - Blood endothelial
+    - Lymphatic endothelial
+  Neural: []
+  Other: []
+  Unknown: []
+
+level3_by_level2:
+  T cells:
+    - CD4
+    - CD8
+    - Treg
+    - Gamma delta
+    - T cell_Unknown
+  B cells:
+    - Naive B
+    - Memory B
+    - B cell_Unknown
+  Myeloid:
+    - Monocyte
+    - Macrophage
+    - Dendritic cell
+    - Neutrophil
+    - Myeloid_Unknown
+  NK cells:
+    - Conventional_NK
+    - NK cell_Unknown
+  Innate lymphoid:
+    - ILC1
+    - ILC2
+    - ILC3
+    - ILC_Unknown
+  Mast cells:
+    - Mast cells
+  Plasma cells:
+    - Plasma cells
+  Fibroblasts:
+    - myCAF
+    - iCAF
+    - apCAF
+    - adiCAF
+    - CAF_Unknown
+  Pericytes:
+    - Canonical_Pericyte
+    - Pericyte_Unknown
+  Smooth muscle:
+    - Vascular_SMC
+    - Smooth muscle_Unknown
+  Osteoblast:
+    - Osteoblast
+  Osteoclast:
+    - Osteoclast
+
+# Raw / legacy / internal strings -> canonical display token (must appear in allowlists above).
+synonyms:
+  Lymphoid: Immune
+  lymphoid: Immune
+  T cell: T cells
+  B cell: B cells
+  CD4 T: CD4
+  CD8 T: CD8
+  CD8 eff: CD8
+  CD8_effector: CD8
+  t_cell_zr: T cells
+  b_cell_zr: B cells
+  myeloid_zr: Myeloid
+  FB: Fibroblasts
+  NKT-like: Gamma delta
+  B mem: Memory B
+
+# Regexes matched against user-facing explorer strings (displayLabel, cellType, summary labels, filter chips).
+forbidden_label_patterns:
+  - pattern: "_zr\\b"
+    id: zr_suffix
+  - pattern: "\\b[a-z][a-z0-9]*_[a-z][a-z0-9_]*\\b"
+    id: snake_case_token
+  - pattern: "\\|[^|]*_zr[^|]*\\|"
+    id: zr_in_pipe_segment
