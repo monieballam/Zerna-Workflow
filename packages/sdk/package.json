@@ -26,12 +26,12 @@
   "dependencies": {},
   "devDependencies": {
     "openapi-typescript": "^7.4.4",
-    "openapi-fetch": "^0.13.5",
+    "openapi-fetch": "^0.17.0",
     "tsup": "^8.3.5",
-    "typescript": "^5.9.3"
+    "typescript": "^7.0.2"
   },
   "peerDependencies": {
-    "openapi-fetch": "^0.13.5"
+    "openapi-fetch": "^0.17.0"
   },
   "peerDependenciesMeta": {
     "openapi-fetch": {
